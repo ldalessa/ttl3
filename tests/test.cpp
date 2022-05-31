@@ -1,50 +1,6 @@
+#include "md_array.hpp"
 #include "ttl/ttl.hpp"
-#include <array>
 #include <concepts>
-#include <numeric>
-
-consteval auto non_zero_extents(std::same_as<int> auto... is) -> bool {
-    return (is && ... && 1);
-}
-
-template <class T, int... _extents>
-struct md_array;
-
-template <class T, int... _extents>
-requires (non_zero_extents(_extents...))
-struct md_array<T, _extents...>
-{
-    using md_array_tag = void;
-
-    static constexpr int M = (_extents * ... * 1);
-    static constexpr auto _strides = [] {
-        std::array<int, sizeof...(_extents)> extents = { _extents... }, strides;
-        std::exclusive_scan(extents.begin(), extents.end(), strides.begin(), 0);
-        return strides;
-    }();
-
-    T _data[M];                            // at least one element for 0th order
-
-    static consteval auto order() -> int {
-        return sizeof...(_extents);
-    }
-
-    constexpr auto operator[](std::integral auto... is) const -> T const& {
-        return _at(*this, is...);
-    }
-
-    constexpr auto operator[](std::integral auto... is) const -> T& {
-        return _at(*this, is...);
-    }
-
-    static constexpr auto _at(auto&& self, std::integral auto... is) -> decltype(auto)
-        requires (sizeof...(is) == sizeof...(_extents))
-    {
-        int i = 0;
-        int n = ((is * self._strides[i++]) + ...);
-        return self._data[n];
-    }
-};
 
 namespace ttl::traits
 {
