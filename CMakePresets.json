@@ -75,6 +75,10 @@
                 "CMAKE_BUILD_TYPE": {
                     "type": "STRING",
                     "value": "Debug"
+                },
+                "CMAKE_CXX_FLAGS": {
+                    "type": "STRING",
+                    "value": "-O0 -g"
                 }
             }
         },
