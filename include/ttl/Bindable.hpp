@@ -30,19 +30,34 @@ namespace ttl
     template <class T>
     struct Bindable
     {
-        constexpr auto _derived() const & -> T const*
+        constexpr auto operator()(concepts::index auto... is) const& -> decltype(auto)
         {
-            return static_cast<T const*>(this);
+            return _bind(_derived(), is...);
         }
 
-        constexpr auto _derived() && -> T*
+        constexpr auto operator()(concepts::index auto... is) && -> decltype(auto)
         {
-            return static_cast<T*>(this);
+            return _bind(_derived(), is...);
         }
 
-        constexpr auto _derived() & -> T*
+        constexpr auto operator()(concepts::index auto... is) & -> decltype(auto)
         {
-            return static_cast<T*>(this);
+            return _bind(_derived(), is...);
+        }
+
+        constexpr auto _derived() const & -> T const&
+        {
+            return *(static_cast<T const*>(this));
+        }
+
+        constexpr auto _derived() && -> T&&
+        {
+            return std::move(*(static_cast<T*>(this)));
+        }
+
+        constexpr auto _derived() & -> T&
+        {
+            return *(static_cast<T*>(this));
         }
 
         template <concepts::index... Is>
@@ -50,28 +65,12 @@ namespace ttl
         {
             static_assert(traits::order_v<Bindable> == sizeof...(is), "Incorrect number of indices");
 
-            // if constexpr because subsumption doesn't work with variadics
             if constexpr ((std::integral<Is> && ...)) {
                 return evaluate(FWD(self), ScalarIndex{is...});
             }
             else {
                 return Bind { FWD(self), is... };
             }
-        }
-
-        constexpr auto operator()(concepts::index auto... is) const& -> decltype(auto)
-        {
-            return _bind(*_derived(), is...);
-        }
-
-        constexpr auto operator()(concepts::index auto... is) && -> decltype(auto)
-        {
-            return _bind(*_derived(), is...);
-        }
-
-        constexpr auto operator()(concepts::index auto... is) & -> decltype(auto)
-        {
-            return _bind(*_derived(), is...);
         }
     };
 }

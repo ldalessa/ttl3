@@ -5,7 +5,7 @@
 namespace ttl
 {
     enum class IndexType : int {
-        INVALID       = 0,
+        ANY           = 0,
         COVARIANT     = 1,
         CONTRAVARIANT = 2,
         PROJECTED     = 4

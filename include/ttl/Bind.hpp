@@ -5,6 +5,8 @@
 #include "ttl/concepts/bindable.hpp"
 #include "ttl/concepts/tensor_index.hpp"
 #include "ttl/traits/order.hpp"
+#include "ttl/traits/scalar_type.hpp"
+#include "ttl/utils/expect.hpp"
 #include "ttl/utils/nttp_args.hpp"
 #include <utility>
 
@@ -46,6 +48,29 @@ namespace ttl
         static consteval auto order() -> int
         {
             return _index.order();
+        }
+
+        constexpr auto evaluate(ScalarIndex<order()> index) const -> decltype(auto)
+            requires(_index.contracted().size() != 0)
+        {
+            constexpr TensorIndex     outer = _index.outer();
+            constexpr TensorIndex projected = _index.projected();
+            constexpr TensorIndex     inner = _index.contracted();
+            expect(outer.size() + projected.size() + inner.size() == _index.size());
+            // constexpr TensorIndex       all = join(outer, projected, inner);
+            return 0;
+        }
+
+        constexpr auto evaluate(ScalarIndex<order()> index) const -> decltype(auto)
+            requires(_index.contracted().size() == 0)
+        {
+            return 0;
+        }
+
+        constexpr auto evaluate(ScalarIndex<order()> index) -> decltype(auto)
+            requires(_index.contracted().size() == 0)
+        {
+            return 0;
         }
     };
 

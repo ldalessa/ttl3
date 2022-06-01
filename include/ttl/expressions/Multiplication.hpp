@@ -4,25 +4,14 @@
 #include "ttl/concepts/expression.hpp"
 #include "ttl/expressions/Product.hpp"
 #include "ttl/utils/FWD.hpp"
+#include "ttl/utils/ops.hpp"
 
 namespace ttl::expressions
 {
-    struct _multiply_fn
-    {
-        constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
-        {
-            return FWD(a) * FWD(b);
-        }
-
-        consteval _multiply_fn(int) {}
-    };
-
-    inline constexpr _multiply_fn multiply{0};
-
     template <concepts::expression A, concepts::expression B>
-    struct Multiplication : Product<A, B, multiply>, Bindable<Multiplication<A, B>>
+    struct Multiplication : Product<A, B, utils::multiply>, Bindable<Multiplication<A, B>>
     {
-        using Product<A, B, plus>::Product;
+        using Product<A, B, utils::multiply>::Product;
     };
 
     template <concepts::expression A, concepts::expression B>

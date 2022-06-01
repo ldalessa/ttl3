@@ -1,4 +1,6 @@
 #pragma once
+
+#include "ttl/utils/FWD.hpp"
 #include <array>
 #include <concepts>
 #include <numeric>
@@ -68,18 +70,27 @@ struct md_array
         return _at(*this, is...);
     }
 
-    /// Multidimensional access.
+    /// Multidimensional access (auto& return handles const)
     static constexpr auto _at(auto&& self, std::convertible_to<int> auto... is) -> auto&
         requires (sizeof...(is) == order())
     {
-        return self._data[_row_major({int(is)...})];
+        return _at(FWD(self), _index_t{int(is)...});
+    }
+
+    /// Multidimensional access (auto& return handles const)
+    static constexpr auto _at(auto&& self, auto&& index) -> auto&
+        requires requires {{ index[0] } -> std::convertible_to<int>; }
+    {
+        return FWD(self)._data[_row_major(FWD(index))];
     }
 
     /// Compute a row-major index offset (msb in is[0]).
-    static constexpr auto _row_major(_index_t is) -> int {
+    static constexpr auto _row_major(auto&& index) -> int
+        requires requires {{ index[0] } -> std::convertible_to<int>; }
+    {
         int n = 0;
         for (int i = 0; i < _order; ++i) {
-            n += is[i] * _strides[i];
+            n += index[i] * _strides[i];
         }
         return n;
     }

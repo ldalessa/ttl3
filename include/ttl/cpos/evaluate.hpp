@@ -13,14 +13,14 @@ namespace ttl
         {
             template <class T, int order>
             constexpr auto operator()(T&& obj, ScalarIndex<order> const& i) const
-                -> traits::scalar_type_t<T> requires requires { FWD(obj).evaluate(i); }
+                -> decltype(auto) requires requires { FWD(obj).evaluate(i); }
             {
                 return FWD(obj).evaluate(i);
             }
 
             template <concepts::scalar A>
             constexpr auto operator()(A&& a, ScalarIndex<0> const& i) const
-                -> traits::scalar_type<A>
+                -> decltype(auto)
             {
                 return static_cast<traits::scalar_type<A>>(a);
             }

@@ -4,25 +4,14 @@
 #include "ttl/concepts/expression.hpp"
 #include "ttl/expressions/Sum.hpp"
 #include "ttl/utils/FWD.hpp"
+#include "ttl/utils/ops.hpp"
 
 namespace ttl::expressions
 {
-    struct _plus_fn
-    {
-        constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
-        {
-            return FWD(a) + FWD(b);
-        }
-
-        consteval _plus_fn(int) {}
-    };
-
-    inline constexpr _plus_fn plus{0};
-
     template <concepts::expression A, concepts::expression B>
-    struct Addition : Sum<A, B, plus>, Bindable<Addition<A, B>>
+    struct Addition : Sum<A, B, utils::plus>, Bindable<Addition<A, B>>
     {
-        using Sum<A, B, plus>::Sum;
+        using Sum<A, B, utils::plus>::Sum;
     };
 
     template <concepts::expression A, concepts::expression B>

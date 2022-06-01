@@ -1,6 +1,12 @@
 #pragma once
 
+#include <cstdio>
+
 namespace ttl::utils
 {
-    void error(char const*);
+    auto error(char const *s) -> bool {
+        std::puts(s);
+        __builtin_unreachable();
+        return false;
+    }
 }

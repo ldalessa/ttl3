@@ -49,19 +49,31 @@ namespace ttl::traits
 }
 
 template <int... extents>
-struct Tensor : md_array<double, extents...>,
-    ttl::Bindable<Tensor<extents...>>
+struct Tensor
+    : md_array<double, extents...>
+    , ttl::Bindable<Tensor<extents...>>
 {
-    using md_array_t = md_array<double, extents...>;
+    static constexpr int _order = sizeof...(extents);
 
-    constexpr auto evaluate(ttl::ScalarIndex<sizeof...(extents)>) const {
-        return 0;
+    using ttl::Bindable<Tensor<extents...>>::operator();
+
+    constexpr auto evaluate(ttl::ScalarIndex<_order> const& i) const -> double const&
+    {
+        return this->_at(*this, std::move(i));
+    }
+
+    constexpr auto evaluate(ttl::ScalarIndex<_order> const& i) -> double&
+    {
+        return this->_at(*this, std::move(i));
     }
 };
 
 template <auto>
 [[gnu::deprecated]]
 void print() {}
+
+[[gnu::deprecated]]
+void print_t(auto&&) {}
 
 int main()
 {
@@ -71,9 +83,10 @@ int main()
     auto i = ttl::index<'i'>;
     auto μ = ttl::index<U'μ'>;
     int n = 1;
-    auto B = A(~i, i, μ);
+    // auto B = A(~i, i, μ);
     // auto C = B(n);
-    auto D = B + B + 1;
+    // auto D = B(0) + B(1) + 1;
+    A(0, 0, 0) = 1;
     // auto E = D(1);
 
     // ttl::Index<'i'> i;
