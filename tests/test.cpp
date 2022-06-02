@@ -96,10 +96,29 @@ int main()
     A(1,1,1) = 8;
 
     auto i = ttl::index<'i'>;
+    auto j = ttl::index<'j'>;
+    auto k = ttl::index<'k'>;
 
     double d = A(~i,0,i);
-
     std::printf("%f\n", d);
+
+    Tensor<1> B = { 1 };
+    // double e = B();
+    auto Bʹ = B(0);
+    double e = Bʹ;
+
+    auto Aʹ = A(i,j,k);
+
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            for (int k = 0; k < 2; ++k) {
+                double x = Aʹ.evaluate(ttl::ScalarIndex(i, j, k));
+                Aʹ.evaluate(ttl::ScalarIndex(i, j, k)) = 0;
+                double y = Aʹ.evaluate(ttl::ScalarIndex(i, j, k));
+                std::printf("%f, %f\n", x, y);
+            }
+        }
+    }
 
     // ttl::Index<'i'> i;
     // albert::Index<'j'> j;

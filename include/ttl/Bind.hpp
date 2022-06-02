@@ -3,6 +3,7 @@
 #include "ScalarIndex.hpp"
 #include "TensorIndex.hpp"
 #include "ttl/concepts/bindable.hpp"
+#include "ttl/concepts/scalar.hpp"
 #include "ttl/concepts/tensor_index.hpp"
 #include "ttl/cpos/evaluate.hpp"
 #include "ttl/traits/order.hpp"
@@ -44,18 +45,21 @@ namespace ttl
         constexpr Bind(Bind&&) = default;
         /// @}
 
-        static consteval auto outer()
-        {
+        static consteval auto outer() {
             return _outer;
         }
 
-        static consteval auto order() -> int
-        {
+        static consteval auto order() -> int {
             return _order;
         }
 
+        /// If this is an order 0 tensor then it can be converted to the
+        /// underlying type.
+        ///
+        /// This is implicit and may require evaluation of a (perhaps expensive)
+        /// contraction, but it is too convenient to ignore or to make explicit.
         constexpr operator traits::scalar_type_t<A>() const
-            requires(_order == 0)
+            // requires(concepts::scalar<Bind>)
         {
             return evaluate(ScalarIndex<0>{});
         }
@@ -66,6 +70,7 @@ namespace ttl
             return _a.template dim<N>();
         }
 
+        /// Evaluate the index when the Bind represents a contraction.
         constexpr auto evaluate(ScalarIndex<_order> const& index) const -> traits::scalar_type_t<A>
             requires(_index.contracted().size() != 0)
         {
@@ -82,16 +87,18 @@ namespace ttl
             return sum;
         }
 
+        /// Pass through the index with projection (if applicable).
         constexpr auto evaluate(ScalarIndex<order()> index) const -> decltype(auto)
             requires(_index.contracted().size() == 0)
         {
-            return 0;
+            return ttl::evaluate(_a, ttl::select<_outer, _index>(index, _projected));
         }
 
+        /// Pass through the index with projection (if applicable).
         constexpr auto evaluate(ScalarIndex<order()> index) -> decltype(auto)
             requires(_index.contracted().size() == 0)
         {
-            return 0;
+            return ttl::evaluate(_a, ttl::select<_outer, _index>(index, _projected));
         }
     };
 
