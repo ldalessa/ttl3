@@ -4,6 +4,7 @@
 #include "TensorIndex.hpp"
 #include "ttl/concepts/bindable.hpp"
 #include "ttl/concepts/tensor_index.hpp"
+#include "ttl/cpos/evaluate.hpp"
 #include "ttl/traits/order.hpp"
 #include "ttl/traits/scalar_type.hpp"
 #include "ttl/utils/expect.hpp"
@@ -22,6 +23,9 @@ namespace ttl
     {
         using projected_index_t = ScalarIndex<_index.capacity()>;
         using scalar_type = traits::scalar_type_t<A>;
+
+        static constexpr concepts::tensor_index auto _outer = _index.outer();
+        static constexpr int _order = _outer.order();
 
         A _a;
         projected_index_t _projected;
@@ -42,23 +46,40 @@ namespace ttl
 
         static consteval auto outer()
         {
-            return _index.outer();
+            return _outer;
         }
 
         static consteval auto order() -> int
         {
-            return _index.order();
+            return _order;
         }
 
-        constexpr auto evaluate(ScalarIndex<order()> index) const -> decltype(auto)
+        constexpr operator traits::scalar_type_t<A>() const
+            requires(_order == 0)
+        {
+            return evaluate(ScalarIndex<0>{});
+        }
+
+        template <int N>
+        constexpr auto dim() const -> int
+        {
+            return _a.template dim<N>();
+        }
+
+        constexpr auto evaluate(ScalarIndex<_order> const& index) const -> traits::scalar_type_t<A>
             requires(_index.contracted().size() != 0)
         {
-            constexpr TensorIndex     outer = _index.outer();
-            constexpr TensorIndex projected = _index.projected();
-            constexpr TensorIndex     inner = _index.contracted();
-            expect(outer.size() + projected.size() + inner.size() == _index.size());
-            // constexpr TensorIndex       all = join(outer, projected, inner);
-            return 0;
+            constexpr TensorIndex outer = _index.outer();
+            constexpr TensorIndex inner = _index.contracted();
+            constexpr TensorIndex   all = join(outer, inner);
+
+            traits::scalar_type_t<A> sum{};
+
+            ScalarIndex<all.size()> i = index;
+            do {
+                sum += ttl::evaluate(_a, ttl::select<all, _index>(i, _projected));
+            } while (carry_sum_inc<_order>(i, _a));
+            return sum;
         }
 
         constexpr auto evaluate(ScalarIndex<order()> index) const -> decltype(auto)

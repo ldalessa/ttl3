@@ -55,7 +55,7 @@ namespace ttl
             _verify();
         }
 
-        static consteval auto capacity() -> int {
+        static constexpr auto capacity() -> int {
             return M;
         }
 
@@ -111,7 +111,22 @@ namespace ttl
 
         constexpr auto end() const {
             return begin() + size();
-        };
+        }
+
+        constexpr auto operator[](int i) const -> _entry_t const& {
+            return _data[i];
+        }
+
+        constexpr auto index_of(wchar_t c) const -> int
+        {
+            expect(_count(c) == 1);
+            for (int i = 0; i < _size; ++i) {
+                if (_data[i].c == c) {
+                    return i;
+                }
+            }
+            __builtin_unreachable();
+        }
 
         /// Count the number of occurrences of the character.
         constexpr auto _count(wchar_t c) const -> int
@@ -197,16 +212,25 @@ namespace ttl
         return permutation;
     }
 
-    // template <int A>
-    // inline constexpr auto join(
-    //         TensorIndex<A> a,
-    //         concepts::tensor_index auto const&... bs)
-    // {
-    //     ([&] {
-    //         for (auto&& [c, t] : bs) {
-    //             a._push_back(c, t);
-    //         }
-    //     }(), ...);
-    //     return a;
-    // }
+
+    /// Join a sequence of indices.
+    ///
+    /// This requires that the joined index fit into an index with the capacity
+    /// of `a`. We could also expand the capacity such that the output capacity
+    /// is the total, but that's not we're going for here. The usage we have is
+    /// that we're usually re-combining the outer, projected, and inner indices
+    /// in a different order.
+    inline constexpr auto join(
+            concepts::tensor_index auto a,
+            concepts::tensor_index auto&&... b)
+        -> concepts::tensor_index auto
+    {
+        expect((a.size() + ... + b.size()) <= a.capacity());
+        ([&] {
+            for (auto&& [c, t] : b) {
+            a._push_back(c, t);
+            }
+        }(), ...);
+        return a;
+    }
 }

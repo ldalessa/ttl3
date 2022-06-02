@@ -57,6 +57,12 @@ struct Tensor
 
     using ttl::Bindable<Tensor<extents...>>::operator();
 
+    template <int N>
+    static constexpr auto dim() -> int
+    {
+        return md_array<double, extents...>::_extents[N];
+    }
+
     constexpr auto evaluate(ttl::ScalarIndex<_order> const& i) const -> double const&
     {
         return this->_at(*this, std::move(i));
@@ -75,19 +81,25 @@ void print() {}
 [[gnu::deprecated]]
 void print_t(auto&&) {}
 
+#include <cstdio>
+
 int main()
 {
-    Tensor<1, 1, 1> A;
-    static_assert(ttl::concepts::bindable<decltype(A)>);
+    Tensor<2, 2, 2> A;
+    A(0,0,0) = 1;
+    A(1,0,0) = 2;
+    A(0,1,0) = 3;
+    A(1,1,0) = 4;
+    A(0,0,1) = 5;
+    A(1,0,1) = 6;
+    A(0,1,1) = 7;
+    A(1,1,1) = 8;
 
     auto i = ttl::index<'i'>;
-    auto μ = ttl::index<U'μ'>;
-    int n = 1;
-    // auto B = A(~i, i, μ);
-    // auto C = B(n);
-    // auto D = B(0) + B(1) + 1;
-    A(0, 0, 0) = 1;
-    // auto E = D(1);
+
+    double d = A(~i,0,i);
+
+    std::printf("%f\n", d);
 
     // ttl::Index<'i'> i;
     // albert::Index<'j'> j;
