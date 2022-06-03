@@ -61,7 +61,7 @@ namespace ttl
         }
 
         template <concepts::index... Is>
-        static constexpr auto _bind(concepts::bindable auto&& self, Is... is) -> decltype(auto)
+        static constexpr auto _bind(concepts::tensor auto&& self, Is... is) -> decltype(auto)
         {
             static_assert(traits::order_v<Bindable> == sizeof...(is), "Incorrect number of indices");
 

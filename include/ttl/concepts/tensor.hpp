@@ -6,7 +6,7 @@
 namespace ttl::concepts
 {
     template <class T>
-    concept bindable = requires {
+    concept tensor = requires {
         typename traits::scalar_type_t<T>;
         { traits::order_v<T> } -> std::same_as<int const&>;
     };

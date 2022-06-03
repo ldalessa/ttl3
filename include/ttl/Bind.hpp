@@ -2,7 +2,7 @@
 
 #include "ScalarIndex.hpp"
 #include "TensorIndex.hpp"
-#include "ttl/concepts/bindable.hpp"
+#include "ttl/concepts/tensor.hpp"
 #include "ttl/concepts/scalar.hpp"
 #include "ttl/concepts/tensor_index.hpp"
 #include "ttl/cpos/evaluate.hpp"
@@ -19,7 +19,7 @@ namespace ttl
     struct Bindable;
 
     template <
-        concepts::bindable A,
+        concepts::tensor A,
         concepts::tensor_index auto _index>
     struct Bind : Bindable<Bind<A, _index>>
     {
@@ -34,7 +34,7 @@ namespace ttl
         A _a;
         projected_index_t _projected;
 
-        constexpr explicit Bind(concepts::bindable auto&& a, concepts::index auto... is)
+        constexpr explicit Bind(concepts::tensor auto&& a, concepts::index auto... is)
                 : _a { std::forward<A>(a) }
                 , _projected { is... }
         {
@@ -103,7 +103,7 @@ namespace ttl
         }
     };
 
-    template <concepts::bindable A>
+    template <concepts::tensor A>
     Bind(A&&, concepts::index auto... is)
         -> Bind<A, TensorIndex{utils::types<decltype(is)...>}>;
 }

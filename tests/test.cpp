@@ -25,9 +25,9 @@ static_assert(ttl::traits::order_v<md_array<double, 2, 2>> == 2);
 static_assert(std::same_as<ttl::traits::scalar_type_t<int>, int>);
 static_assert(std::same_as<ttl::traits::scalar_type_t<double>, double>);
 static_assert(std::same_as<ttl::traits::scalar_type_t<md_array<double>>, double>);
-static_assert(ttl::concepts::bindable<int>);
-static_assert(ttl::concepts::bindable<double>);
-static_assert(ttl::concepts::bindable<md_array<double>>);
+static_assert(ttl::concepts::tensor<int>);
+static_assert(ttl::concepts::tensor<double>);
+static_assert(ttl::concepts::tensor<md_array<double>>);
 // using namespace ttl::grammar;
 
 template <int...>

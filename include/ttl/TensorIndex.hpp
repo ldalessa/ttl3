@@ -293,10 +293,10 @@ namespace ttl
     {
         T&& t;
 
-        template <int n>
+        template <int i>
         constexpr auto extent() const -> int {
-            constexpr int m = b.nth_index_of(a[n].c, 1);
-            return ttl::extent<m>(t);
+            constexpr int j = b.nth_index_of(a[i].c, 1);
+            return ttl::extent<j>(t);
         }
     };
 

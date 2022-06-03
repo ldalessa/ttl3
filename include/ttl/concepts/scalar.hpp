@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ttl/concepts/bindable.hpp"
+#include "ttl/concepts/tensor.hpp"
 #include "ttl/traits/order.hpp"
 
 namespace ttl::concepts
 {
     template <class T>
-    concept scalar = bindable<T> and (traits::order_v<T> == 0);
+    concept scalar = tensor<T> and (traits::order_v<T> == 0);
 }
