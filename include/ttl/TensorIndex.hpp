@@ -2,6 +2,7 @@
 
 #include "ttl/Index.hpp"
 #include "ttl/concepts/index.hpp"
+#include "ttl/concepts/non_scalar.hpp"
 #include "ttl/concepts/tensor_index.hpp"
 #include "ttl/utils/error.hpp"
 #include "ttl/utils/expect.hpp"
@@ -117,11 +118,11 @@ namespace ttl
             return _data[i];
         }
 
-        constexpr auto index_of(wchar_t c) const -> int
+        constexpr auto nth_index_of(wchar_t c, int n) const -> int
         {
-            expect(_count(c) == 1);
+            expect(_count(c) >= n);
             for (int i = 0; i < _size; ++i) {
-                if (_data[i].c == c) {
+                if (_data[i].c == c and --n == 0) {
                     return i;
                 }
             }
@@ -187,17 +188,32 @@ namespace ttl
         return a.size() == b.size() and std::equal(a.begin(), a.end(), b.begin());
     }
 
+    /// Concatenate two indices.
+    inline constexpr auto operator+(
+            concepts::tensor_index auto const& a,
+            concepts::tensor_index auto const& b)
+    {
+        constexpr int M = a.capacity() + b.capacity();
+        TensorIndex<M> out{};
+        for (auto&& [c, t] : a) out._push_back(c, t);
+        for (auto&& [c, t] : b) out._push_back(c, t);
+        out._verify();
+        return out;
+    }
+
     /// Compute the disjoint union of the indices.
     inline constexpr auto operator^(
             concepts::tensor_index auto const& a,
             concepts::tensor_index auto const& b)
     {
-        constexpr int M = a.capacity() + b.capacity();
-        TensorIndex<M> _union;
-        for (auto&& [c, t] : a) _union._push_back(c, t);
-        for (auto&& [c, t] : b) _union._push_back(c, t);
-        _union._verify();
-        return _union.outer();
+        return (a + b).outer();
+    }
+
+    inline constexpr auto operator&(
+            concepts::tensor_index auto const& a,
+            concepts::tensor_index auto const& b)
+    {
+        return (a + b).contracted();
     }
 
     /// Determine if two indices are permutations.
@@ -212,14 +228,11 @@ namespace ttl
         return permutation;
     }
 
-
     /// Join a sequence of indices.
     ///
-    /// This requires that the joined index fit into an index with the capacity
-    /// of `a`. We could also expand the capacity such that the output capacity
-    /// is the total, but that's not we're going for here. The usage we have is
-    /// that we're usually re-combining the outer, projected, and inner indices
-    /// in a different order.
+    /// This is distinct from concatenate (operator+) because join requires that
+    /// the joined index fit into an index with the capacity of `a`. This occurs
+    /// in some expressions where we have contractions.
     inline constexpr auto join(
             concepts::tensor_index auto a,
             concepts::tensor_index auto&&... b)
@@ -232,5 +245,69 @@ namespace ttl
             }
         }(), ...);
         return a;
+    }
+
+    /// Use two tensor indices to map between extents.
+    ///
+    /// It is the case that our tensors have extents for each of their indices,
+    /// but during various operations (like contractions and/or shuffles) these
+    /// indices can become shuffled.
+    ///
+    /// For instance, when evaluating the following example:
+    ///
+    ///     Matrix A, B, C;
+    ///     Index i,j,k;
+    ///     C(i,j) = A(i,~k) * B(k,j)
+    ///
+    /// The Bind resulting from the right-hand-side has an outer index of `i,j`
+    /// and a contracted index of k. When evaluating the contraction we need to
+    /// know the bounds for `k`.
+    ///
+    ///     auto contract(int i, int j) {
+    ///         scalar d = 0
+    ///         for (int k = 0; k < WHAT_GOES_HERE; ++k) {
+    ///             d += A(i,k) + B(k,j);
+    ///         }
+    ///     }
+    ///
+    /// Ultimately, to figure out "WHAT_GOES_HERE" we need to take the
+    /// contracted index (i,j,k) and ask A what the extents for k are (and
+    /// possibly also ask B for debugging purposed, since they need to be
+    /// equivalent).
+    ///
+    /// This template allows that.
+    ///
+    ///     Matrix A(8, 16), B(16, 4);
+    ///     assert(ttl::extent<0>(A) == 8);
+    ///     assert(ttl::extent<1>(A) == 16);
+    ///     map_extents<{i,j,k}, {i,k}, decltype(A)> mapper(A);
+    ///     assert(ttl::extent<0>(mapper) == 8);
+    ///     assert(ttl::extent<2>(mapper) == 16);
+    ///
+    ///     ttl::extent<1>(mapper); // NO MAPPING FOR `j`, FAILS TO COMPILE
+    template <
+        concepts::tensor_index auto a,
+        concepts::tensor_index auto b,
+        concepts::non_scalar T>
+    struct map_extents
+    {
+        T&& t;
+
+        template <int n>
+        constexpr auto extent() const -> int {
+            constexpr int m = b.nth_index_of(a[n].c, 1);
+            return ttl::extent<m>(t);
+        }
+    };
+
+    template <
+        concepts::tensor_index auto a,
+        concepts::tensor_index auto b,
+        concepts::non_scalar T>
+    inline constexpr auto make_map_extents(T&& t) -> map_extents<a, b, T>
+    {
+        return map_extents<a, b, T> {
+            .t = t
+        };
     }
 }

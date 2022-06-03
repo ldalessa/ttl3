@@ -3,7 +3,7 @@
 #include "ttl/Index.hpp"
 #include "ttl/concepts/index.hpp"
 #include "ttl/concepts/tensor_index.hpp"
-#include "ttl/cpos/dim.hpp"
+#include "ttl/cpos/extent.hpp"
 #include "ttl/utils/expect.hpp"
 #include <array>
 #include <concepts>
@@ -54,6 +54,23 @@ namespace ttl
     template <
         concepts::tensor_index auto from,
         concepts::tensor_index auto to>
+    inline constexpr auto select(ScalarIndex<from.size()> const &in)
+        -> ScalarIndex<to.size()>
+    {
+        ScalarIndex<to.capacity()> out{};
+
+        for (int i = 0; i < out.size(); ++i) {
+            auto&& [c, t] = to[i];
+            expect(t != IndexType::PROJECTED);
+            int j = from.nth_index_of(c, 1);
+            out[i] = in[j];
+        }
+        return out;
+    }
+
+    template <
+        concepts::tensor_index auto from,
+        concepts::tensor_index auto to>
     inline constexpr auto select(
             ScalarIndex<from.size()> const &in,
             ScalarIndex<to.size()> const& projected)
@@ -67,21 +84,30 @@ namespace ttl
                 continue;
             }
 
-            int j = from.index_of(c);
+            int j = from.nth_index_of(c, 1);
             out[i] = in[j];
         }
         return out;
     }
 
-    template <int prefix, int all>
-    inline constexpr auto carry_sum_inc(ScalarIndex<all>& index, auto&& dims) -> bool
-        requires(all > prefix)
+    template <int prefix>
+    struct _carry_sum_inc_fn
     {
-        return [&]<std::size_t... is>(std::index_sequence<is...>) {
-            return ([&] {
-                constexpr int i = prefix + is;
-                return (++index[i] < dim<i>(dims)) ? true : (index[i] = 0, false);
-            }() || ...);
-        }(std::make_index_sequence<all - prefix>());
-    }
+        template <int all>
+        constexpr auto operator()(ScalarIndex<all>& index, auto&& extents) const -> bool
+            requires(all > prefix)
+        {
+            return [&]<std::size_t... is>(std::index_sequence<is...>) {
+                return ([&] {
+                    constexpr int i = prefix + is;
+                    return (++index[i] < ttl::extent<i>(extents)) ? true : (index[i] = 0, false);
+                }() || ...);
+            }(std::make_index_sequence<all - prefix>());
+        }
+
+        consteval _carry_sum_inc_fn(int) {}
+    };
+
+    template <int prefix>
+    inline constexpr _carry_sum_inc_fn<prefix> carry_sum_inc{0};
 }

@@ -58,7 +58,7 @@ struct Tensor
     using ttl::Bindable<Tensor<extents...>>::operator();
 
     template <int N>
-    static constexpr auto dim() -> int
+    static constexpr auto extent() -> int
     {
         return md_array<double, extents...>::_extents[N];
     }
@@ -85,40 +85,51 @@ void print_t(auto&&) {}
 
 int main()
 {
-    Tensor<2, 2, 2> A;
+    // Tensor<2, 2, 2> A;
+    // A(0,0,0) = 1;
+    // A(1,0,0) = 2;
+    // A(0,1,0) = 3;
+    // A(1,1,0) = 4;
+    // A(0,0,1) = 5;
+    // A(1,0,1) = 6;
+    // A(0,1,1) = 7;
+    // A(1,1,1) = 8;
+
+    Tensor<1, 2, 1> A;
     A(0,0,0) = 1;
-    A(1,0,0) = 2;
     A(0,1,0) = 3;
-    A(1,1,0) = 4;
-    A(0,0,1) = 5;
-    A(1,0,1) = 6;
-    A(0,1,1) = 7;
-    A(1,1,1) = 8;
 
     auto i = ttl::index<'i'>;
     auto j = ttl::index<'j'>;
     auto k = ttl::index<'k'>;
 
-    double d = A(~i,0,i);
+    double d = A(~i,j,i)(0);
     std::printf("%f\n", d);
 
-    Tensor<1> B = { 1 };
-    // double e = B();
-    auto Bʹ = B(0);
-    double e = Bʹ;
+    // Tensor<1> B = { 1 };
+    // // double e = B();
+    // auto Bʹ = B(0);
+    // double e = Bʹ;
 
-    auto Aʹ = A(i,j,k);
+    // Tensor<> C = {1};
 
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 2; ++j) {
-            for (int k = 0; k < 2; ++k) {
-                double x = Aʹ.evaluate(ttl::ScalarIndex(i, j, k));
-                Aʹ.evaluate(ttl::ScalarIndex(i, j, k)) = 0;
-                double y = Aʹ.evaluate(ttl::ScalarIndex(i, j, k));
-                std::printf("%f, %f\n", x, y);
-            }
-        }
-    }
+    // auto D = C + C;
+    // // print_t(D);
+    // double d = D();
+    // std::printf("%f\n", d);
+
+    // auto Aʹ = A(i,j,k);
+
+    // for (int i = 0; i < 2; ++i) {
+    //     for (int j = 0; j < 2; ++j) {
+    //         for (int k = 0; k < 2; ++k) {
+    //             double x = Aʹ.evaluate(ttl::ScalarIndex(i, j, k));
+    //             Aʹ.evaluate(ttl::ScalarIndex(i, j, k)) = 0;
+    //             double y = Aʹ.evaluate(ttl::ScalarIndex(i, j, k));
+    //             std::printf("%f, %f\n", x, y);
+    //         }
+    //     }
+    // }
 
     // ttl::Index<'i'> i;
     // albert::Index<'j'> j;

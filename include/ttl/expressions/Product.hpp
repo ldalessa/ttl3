@@ -14,14 +14,35 @@ namespace ttl::expressions
     {
         using scalar_type = std::common_type_t<traits::scalar_type_t<A>, traits::scalar_type_t<B>>;
 
+        static constexpr auto _outer = traits::outer_v<A> ^ traits::outer_v<B>;
+        static constexpr auto _order = _outer.order();
+
         using Binary<A, B>::Binary;
 
         static consteval auto order() -> int {
-            return outer().order();
+            return _order;
         }
 
         static consteval auto outer() {
-            return traits::outer_v<A> ^ traits::outer_v<B>;
+            return _outer;
         }
+
+        constexpr auto evaluate(ScalarIndex<order()> const& index) const -> scalar_type
+        {
+            constexpr TensorIndex ai = traits::outer_v<A>;
+            constexpr TensorIndex bi = traits::outer_v<B>;
+            constexpr TensorIndex contracted = ai & bi;
+            constexpr TensorIndex all = _outer + contracted;
+
+            scalar_type c{};
+            ScalarIndex<all.size()> i = index;
+            do {
+                auto&& a = ttl::evaluate(this->_a, ttl::select<all, ai>(i));
+                auto&& b = ttl::evaluate(this->_b, ttl::select<all, bi>(i));
+                c += op(FWD(a), FWD(b));
+            } while (ttl::carry_sum_inc<order()>(i, *this));
+            return c;
+        }
+
     };
 }

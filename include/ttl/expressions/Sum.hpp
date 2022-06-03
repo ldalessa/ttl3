@@ -1,11 +1,13 @@
 #pragma once
 
+#include "ttl/ScalarIndex.hpp"
 #include "ttl/TensorIndex.hpp"
 #include "ttl/concepts/expression.hpp"
 #include "ttl/expressions/Binary.hpp"
 #include "ttl/traits/order.hpp"
 #include "ttl/traits/outer.hpp"
 #include "ttl/traits/scalar_type.hpp"
+#include "ttl/utils/FWD.hpp"
 
 namespace ttl::expressions
 {
@@ -25,6 +27,16 @@ namespace ttl::expressions
 
         static consteval auto outer() -> decltype(traits::outer_v<A>) {
             return traits::outer_v<A>;
+        }
+
+        constexpr auto evaluate(ScalarIndex<order()> const& i) const -> scalar_type
+        {
+            constexpr TensorIndex all = outer();
+            constexpr TensorIndex ai = traits::outer_v<A>;
+            constexpr TensorIndex bi = traits::outer_v<B>;
+            auto&& a = ttl::evaluate(this->_a, ttl::select<all, ai>(i));
+            auto&& b = ttl::evaluate(this->_b, ttl::select<all, bi>(i));
+            return op(FWD(a), FWD(b));
         }
     };
 }

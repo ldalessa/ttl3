@@ -18,12 +18,12 @@ namespace ttl
                 return FWD(obj).evaluate(i);
             }
 
-            template <concepts::scalar A>
-            constexpr auto operator()(A&& a, ScalarIndex<0> const& i) const
-                -> decltype(auto)
-            {
-                return static_cast<traits::scalar_type<A>>(a);
-            }
+            // template <concepts::scalar A>
+            // constexpr auto operator()(A&& a, ScalarIndex<0> const& i) const
+            //     -> decltype(auto)
+            // {
+            //     return static_cast<traits::scalar_type<A>>(a);
+            // }
 
             consteval evaluate(int) {}
         };

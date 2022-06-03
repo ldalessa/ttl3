@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ttl/utils/expect.hpp"
 #include "ttl/utils/FWD.hpp"
 #include <array>
 #include <concepts>
@@ -92,6 +93,7 @@ struct md_array
         for (int i = 0; i < _order; ++i) {
             n += index[i] * _strides[i];
         }
+        expect(0 <= n and n < _size);
         return n;
     }
 };

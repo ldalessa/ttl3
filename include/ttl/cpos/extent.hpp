@@ -8,18 +8,18 @@ namespace ttl
     namespace cpos
     {
         template <int N>
-        struct dim
+        struct extent
         {
             constexpr auto operator()(auto&& obj) const -> int
-                requires requires { {FWD(obj).template dim<N>()} -> std::same_as<int>; }
+                requires requires{{ FWD(obj).template extent<0>() } -> std::same_as<int>;}
             {
-                return FWD(obj).template dim<N>();
+                return FWD(obj).template extent<N>();
             }
 
-            consteval dim(int) {}
+            consteval extent(int) {}
         };
     }
 
     template <int N>
-    inline constexpr cpos::dim<N> dim{0};
+    inline constexpr cpos::extent<N> extent{0};
 }
