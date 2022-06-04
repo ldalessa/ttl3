@@ -192,11 +192,10 @@ namespace ttl
     }
 
     /// Concatenate two indices.
-    inline constexpr auto operator+(
-            concepts::tensor_index auto const& a,
-            concepts::tensor_index auto const& b)
+    template <concepts::tensor_index A, concepts::tensor_index B>
+    inline constexpr auto operator+(A const& a, B const& b)
     {
-        constexpr int M = a.capacity() + b.capacity();
+        constexpr int M = A::capacity() + B::capacity();
         TensorIndex<M> out{};
         for (auto&& [c, t] : a) out._push_back(c, t);
         for (auto&& [c, t] : b) out._push_back(c, t);
