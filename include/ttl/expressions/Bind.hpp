@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ScalarIndex.hpp"
-#include "TensorIndex.hpp"
+#include "ttl/ScalarIndex.hpp"
+#include "ttl/TensorIndex.hpp"
 #include "ttl/concepts/tensor.hpp"
 #include "ttl/concepts/scalar.hpp"
 #include "ttl/concepts/static_extents.hpp"
@@ -16,9 +16,11 @@
 
 namespace ttl
 {
-    template <class T>
-    struct Bindable;
+    template <class> struct Bindable;
+}
 
+namespace ttl::expressions
+{
     template <
         concepts::tensor A,
         concepts::tensor_index auto _index>
@@ -108,15 +110,16 @@ namespace ttl
     template <concepts::tensor A>
     Bind(A&&, concepts::index auto... is)
         -> Bind<A, TensorIndex{utils::types<decltype(is)...>}>;
-
-    namespace traits
-    {
-        /// Propagate the static extents through the bind.
-        template <int M, concepts::tensor A, concepts::tensor_index auto i>
-        requires concepts::static_extents<A>
-        struct extent<M, Bind<A, i>>
-        {
-            static constexpr int value = traits::extent_v<M, A>;
-        };
-    }
 }
+
+namespace ttl::traits
+{
+    /// Propagate the static extents through the bind.
+    template <int M, concepts::tensor A, concepts::tensor_index auto i>
+    requires concepts::static_extents<A>
+    struct extent<M, expressions::Bind<A, i>>
+    {
+        static constexpr int value = traits::extent_v<M, A>;
+    };
+}
+

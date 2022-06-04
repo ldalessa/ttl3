@@ -1,18 +1,18 @@
 #pragma once
 
+#include "ttl/Bindable.hpp"
 #include "ttl/TensorIndex.hpp"
 #include "ttl/concepts/expression.hpp"
-#include "ttl/expressions/Binary.hpp"
 #include "ttl/traits/order.hpp"
 #include "ttl/traits/outer.hpp"
 #include "ttl/traits/scalar_type.hpp"
 #include "ttl/utils/FWD.hpp"
-#include "ttl/utils/nttp_args.hpp"
+#include "ttl/utils/sequence.hpp"
 
 namespace ttl::expressions
 {
     template <concepts::expression A, concepts::expression B, auto op>
-    struct Product : Binary<A, B>
+    struct Product : Bindable<Product<A, B, op>>
     {
         using scalar_type = std::common_type_t<traits::scalar_type_t<A>, traits::scalar_type_t<B>>;
 
@@ -24,7 +24,8 @@ namespace ttl::expressions
 
         static constexpr int _order = _outer.order();
 
-        using Binary<A, B>::Binary;
+        A _a;
+        B _b;
 
         static consteval auto order() -> int {
             return _order;
@@ -32,6 +33,12 @@ namespace ttl::expressions
 
         static consteval auto outer() {
             return _outer;
+        }
+
+        constexpr operator scalar_type() const
+            requires(_order == 0)
+        {
+            return evaluate(ScalarIndex<0>{});
         }
 
         constexpr auto evaluate(ScalarIndex<_order> const& index) const -> scalar_type

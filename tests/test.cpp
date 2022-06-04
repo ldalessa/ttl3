@@ -111,10 +111,12 @@ int main()
     auto i = ttl::index<'i'>;
     auto j = ttl::index<'j'>;
     auto k = ttl::index<'k'>;
+    auto l = ttl::index<'l'>;
 
-    auto C = A(~i,~j,~k) * B(i,j,k);
+    // auto C = A(~i,~j,~k) + B(i,j,k);
+    auto C = A(i,j,k) + B(i,j,k);
 
-    double d = C();
+    double d = C(0,0,0);
     std::printf("%f\n", d);
 
     // Tensor<1> B = { 1 };

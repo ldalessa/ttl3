@@ -3,6 +3,7 @@
 #include "ttl/TensorIndex.hpp"
 #include "ttl/concepts/index.hpp"
 #include "ttl/cpos/evaluate.hpp"
+#include "ttl/expressions/Bind.hpp"
 #include "ttl/traits/order.hpp"
 #include "ttl/traits/scalar_type.hpp"
 #include "ttl/utils/FWD.hpp"
@@ -69,7 +70,7 @@ namespace ttl
                 return evaluate(FWD(self), ScalarIndex{is...});
             }
             else {
-                return Bind { FWD(self), is... };
+                return expressions::Bind { FWD(self), is... };
             }
         }
     };
