@@ -6,6 +6,8 @@
 #include "ttl/traits/order.hpp"
 #include "ttl/traits/outer.hpp"
 #include "ttl/traits/scalar_type.hpp"
+#include "ttl/utils/FWD.hpp"
+#include "ttl/utils/nttp_args.hpp"
 
 namespace ttl::expressions
 {
@@ -14,8 +16,13 @@ namespace ttl::expressions
     {
         using scalar_type = std::common_type_t<traits::scalar_type_t<A>, traits::scalar_type_t<B>>;
 
-        static constexpr auto _outer = traits::outer_v<A> ^ traits::outer_v<B>;
-        static constexpr auto _order = _outer.order();
+        static constexpr TensorIndex _ai = traits::outer_v<A>;
+        static constexpr TensorIndex _bi = traits::outer_v<B>;
+        static constexpr TensorIndex _outer = _ai ^ _bi;
+        static constexpr TensorIndex _contracted = _ai & _bi;
+        static constexpr TensorIndex _inner = join(_outer, _contracted);
+
+        static constexpr int _order = _outer.order();
 
         using Binary<A, B>::Binary;
 
@@ -27,22 +34,42 @@ namespace ttl::expressions
             return _outer;
         }
 
-        constexpr auto evaluate(ScalarIndex<order()> const& index) const -> scalar_type
+        constexpr auto evaluate(ScalarIndex<_order> const& index) const -> scalar_type
         {
-            constexpr TensorIndex ai = traits::outer_v<A>;
-            constexpr TensorIndex bi = traits::outer_v<B>;
-            constexpr TensorIndex contracted = ai & bi;
-            constexpr TensorIndex all = _outer + contracted;
-
             scalar_type c{};
-            ScalarIndex<all.size()> i = index;
+            ScalarIndex<_inner.size()> i = index;
             do {
-                auto&& a = ttl::evaluate(this->_a, ttl::select<all, ai>(i));
-                auto&& b = ttl::evaluate(this->_b, ttl::select<all, bi>(i));
+                auto&& a = ttl::evaluate(this->_a, ttl::select<_inner, _ai>(i));
+                auto&& b = ttl::evaluate(this->_b, ttl::select<_inner, _bi>(i));
                 c += op(FWD(a), FWD(b));
-            } while (ttl::carry_sum_inc<order()>(i, *this));
+            } while (ttl::carry_sum_inc<_order>(i, this->_a));
             return c;
         }
 
+        static constexpr auto _validate_shapes() -> bool
+            requires (concepts::static_extents<A> and concepts::static_extents<B>)
+        {
+            constexpr int n = _contracted.size();
+            return []<int... i>(utils::sequence<i...>) {
+                constexpr map_extents<_contracted, _ai, A> a{};
+                constexpr map_extents<_contracted, _bi, B> b{};
+                return ((ttl::extent<i>(a) == ttl::extent<i>(b)) && ...);
+            }(utils::sequence_v<n>);
+        }
+
+        constexpr auto _validate_shapes() const -> bool
+        {
+            constexpr int n = _contracted.size();
+            return [&]<int... i>(utils::sequence<i...>)
+            {
+                map_extents<_contracted, _ai, A> a{this->_a};
+                map_extents<_contracted, _bi, B> b{this->_b};
+                return ((ttl::extent<i>(a) == ttl::extent<i>(b)) && ...);
+            }(utils::sequence_v<n>);
+        }
+
+        static_assert(not concepts::static_extents<A> or
+                      not concepts::static_extents<B> or
+                      _validate_shapes());
     };
 }

@@ -3,9 +3,12 @@
 #include "ttl/Index.hpp"
 #include "ttl/concepts/index.hpp"
 #include "ttl/concepts/non_scalar.hpp"
+#include "ttl/concepts/static_extents.hpp"
 #include "ttl/concepts/tensor_index.hpp"
 #include "ttl/utils/error.hpp"
 #include "ttl/utils/expect.hpp"
+#include "ttl/utils/FWD.hpp"
+#include "ttl/utils/nttp_args.hpp"
 #include "ttl/utils/ops.hpp"
 #include "ttl/utils/type_args.hpp"
 #include <array>
@@ -272,7 +275,7 @@ namespace ttl
     ///
     /// Ultimately, to figure out "WHAT_GOES_HERE" we need to take the
     /// contracted index (i,j,k) and ask A what the extents for k are (and
-    /// possibly also ask B for debugging purposed, since they need to be
+    /// possibly also ask B for debugging purposes, since they need to be
     /// equivalent).
     ///
     /// This template allows that.
@@ -293,21 +296,40 @@ namespace ttl
     {
         T&& t;
 
+        explicit constexpr map_extents(std::convertible_to<T> auto&& u)
+            : t(std::forward<T>(u))
+        {
+        }
+
         template <int i>
-        constexpr auto extent() const -> int {
-            constexpr int j = b.nth_index_of(a[i].c, 1);
-            return ttl::extent<j>(t);
+        constexpr auto map(utils::nttp_args<i> = {}) const -> int {
+            return b.nth_index_of(a[i].c, 1);
+        }
+
+        template <int i>
+        constexpr auto extent(utils::nttp_args<i> tag = {}) const -> int {
+            return ttl::extent<map(tag)>(t);
         }
     };
 
+    /// Mapping specialization when the provider meets static_extents.
     template <
         concepts::tensor_index auto a,
         concepts::tensor_index auto b,
-        concepts::non_scalar T>
-    inline constexpr auto make_map_extents(T&& t) -> map_extents<a, b, T>
+        concepts::static_extents T>
+    struct map_extents<a, b, T>
     {
-        return map_extents<a, b, T> {
-            .t = t
-        };
-    }
+        constexpr map_extents() {}
+        explicit constexpr map_extents(std::convertible_to<T> auto&&) {}
+
+        template <int i>
+        static constexpr auto map(utils::nttp_args<i> = {}) -> int {
+            return b.nth_index_of(a[i].c, 1);
+        }
+
+        template <int i>
+        static constexpr auto extent(utils::nttp_args<i> tag = {}) -> int {
+            return traits::extent_v<map(tag), T>;
+        }
+    };
 }

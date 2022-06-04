@@ -4,6 +4,7 @@
 #include "TensorIndex.hpp"
 #include "ttl/concepts/tensor.hpp"
 #include "ttl/concepts/scalar.hpp"
+#include "ttl/concepts/static_extents.hpp"
 #include "ttl/concepts/tensor_index.hpp"
 #include "ttl/cpos/evaluate.hpp"
 #include "ttl/cpos/extent.hpp"
@@ -72,14 +73,15 @@ namespace ttl
         constexpr auto extent() const -> int
         {
             static_assert(N < _order);
-            return ttl::extent<N>(make_map_extents<_outer, _index>(_a));
+            map_extents<_inner, _index, A> extents{_a};
+            return ttl::extent<N>(extents);
         }
 
         /// Evaluate the index when the Bind represents a contraction.
         constexpr auto evaluate(ScalarIndex<_order> const& index) const -> traits::scalar_type_t<A>
             requires(_index.contracted().size() != 0)
         {
-            auto extents = make_map_extents<_inner, _index>(_a);
+            map_extents<_inner, _index, A> extents{_a};
             traits::scalar_type_t<A> sum{};
             ScalarIndex<_inner.size()> i = index;
             do {
@@ -89,14 +91,14 @@ namespace ttl
         }
 
         /// Pass through the index with projection (if applicable).
-        constexpr auto evaluate(ScalarIndex<order()> index) const -> decltype(auto)
+        constexpr auto evaluate(ScalarIndex<order()> const& index) const -> decltype(auto)
             requires(_index.contracted().size() == 0)
         {
             return ttl::evaluate(_a, ttl::select<_outer, _index>(index, _projected));
         }
 
         /// Pass through the index with projection (if applicable).
-        constexpr auto evaluate(ScalarIndex<order()> index) -> decltype(auto)
+        constexpr auto evaluate(ScalarIndex<order()> const& index) -> decltype(auto)
             requires(_index.contracted().size() == 0)
         {
             return ttl::evaluate(_a, ttl::select<_outer, _index>(index, _projected));
@@ -106,4 +108,15 @@ namespace ttl
     template <concepts::tensor A>
     Bind(A&&, concepts::index auto... is)
         -> Bind<A, TensorIndex{utils::types<decltype(is)...>}>;
+
+    namespace traits
+    {
+        /// Propagate the static extents through the bind.
+        template <int M, concepts::tensor A, concepts::tensor_index auto i>
+        requires concepts::static_extents<A>
+        struct extent<M, Bind<A, i>>
+        {
+            static constexpr int value = traits::extent_v<M, A>;
+        };
+    }
 }

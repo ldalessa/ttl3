@@ -4,9 +4,9 @@
 
 namespace ttl::utils
 {
+    [[gnu::noreturn]]
     auto error(char const *s) -> bool {
         std::puts(s);
-        __builtin_unreachable();
-        return false;
+        __builtin_abort();
     }
 }

@@ -46,6 +46,13 @@ namespace ttl::traits
     {
         using type = double;
     };
+
+    template <int M, int... extents>
+    struct extent<M, Tensor<extents...>>
+    {
+        constexpr static std::array<int, sizeof...(extents)> _extents = { extents... };
+        constexpr static int value = _extents[M];
+    };
 }
 
 template <int... extents>
@@ -74,6 +81,8 @@ struct Tensor
     }
 };
 
+static_assert(ttl::concepts::static_extents<Tensor<2, 2, 2>>);
+
 template <auto>
 [[gnu::deprecated]]
 void print() {}
@@ -85,25 +94,27 @@ void print_t(auto&&) {}
 
 int main()
 {
-    // Tensor<2, 2, 2> A;
-    // A(0,0,0) = 1;
-    // A(1,0,0) = 2;
-    // A(0,1,0) = 3;
-    // A(1,1,0) = 4;
-    // A(0,0,1) = 5;
-    // A(1,0,1) = 6;
-    // A(0,1,1) = 7;
-    // A(1,1,1) = 8;
-
-    Tensor<1, 2, 1> A;
+    Tensor<2, 2, 2> A;
     A(0,0,0) = 1;
+    A(1,0,0) = 2;
     A(0,1,0) = 3;
+    A(1,1,0) = 4;
+    A(0,0,1) = 5;
+    A(1,0,1) = 6;
+    A(0,1,1) = 7;
+    A(1,1,1) = 8;
+
+    Tensor<2, 2, 2> B;
+    B(0,0,0) = 1;
+    B(0,1,0) = 3;
 
     auto i = ttl::index<'i'>;
     auto j = ttl::index<'j'>;
     auto k = ttl::index<'k'>;
 
-    double d = A(~i,j,i)(0);
+    auto C = A(~i,~j,~k) * B(i,j,k);
+
+    double d = C();
     std::printf("%f\n", d);
 
     // Tensor<1> B = { 1 };
@@ -118,7 +129,8 @@ int main()
     // double d = D();
     // std::printf("%f\n", d);
 
-    // auto Aʹ = A(i,j,k);
+    // auto Aʹ =
+    A(i,j,k);
 
     // for (int i = 0; i < 2; ++i) {
     //     for (int j = 0; j < 2; ++j) {
