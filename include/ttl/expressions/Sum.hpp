@@ -46,11 +46,19 @@ namespace ttl::expressions
             return evaluate(ScalarIndex<0>{});
         }
 
+        template <int M>
+        constexpr auto extent() const -> int
+        {
+            static_assert(M < _order);
+            return ttl::extent<M>(_a);
+        }
+
+
         constexpr auto evaluate(ScalarIndex<_order> const& i) const -> scalar_type
         {
             expect(_validate_shapes());
-            auto&& a = ttl::evaluate(this->_a, i);
-            auto&& b = ttl::evaluate(this->_b, ttl::select<_ai, _bi>(i));
+            auto&& a = ttl::evaluate(_a, i);
+            auto&& b = ttl::evaluate(_b, ttl::select<_ai, _bi>(i));
             return op(FWD(a), FWD(b));
         }
 
@@ -67,8 +75,8 @@ namespace ttl::expressions
         constexpr auto _validate_shapes() const -> bool
         {
             return [&]<int... i>(utils::sequence<i...>) {
-                map_extents<_ai, _ai, A> a{this->_a};
-                map_extents<_ai, _bi, B> b{this->_b};
+                map_extents<_ai, _ai, A> a{_a};
+                map_extents<_ai, _bi, B> b{_b};
                 return ((ttl::extent<i>(a) == ttl::extent<i>(b)) && ...);
             }(utils::sequence_v<_order>);
         }
@@ -76,5 +84,15 @@ namespace ttl::expressions
         static_assert(not concepts::static_extents<A> or
                       not concepts::static_extents<B> or
                       _validate_shapes());
+    };
+}
+
+namespace ttl::traits
+{
+    /// Propagate the static extents through the bind.
+    template <int M, concepts::static_extents A, concepts::static_extents B, auto op>
+    struct extent<M, expressions::Sum<A, B, op>>
+    {
+        static constexpr int value = traits::extent_v<M, A>;
     };
 }

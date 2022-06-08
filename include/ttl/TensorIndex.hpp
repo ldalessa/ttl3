@@ -1,8 +1,8 @@
 #pragma once
 
 #include "ttl/Index.hpp"
+#include "ttl/concepts/extents.hpp"
 #include "ttl/concepts/index.hpp"
-#include "ttl/concepts/non_scalar.hpp"
 #include "ttl/concepts/static_extents.hpp"
 #include "ttl/concepts/tensor_index.hpp"
 #include "ttl/utils/error.hpp"
@@ -15,38 +15,39 @@
 
 namespace ttl
 {
+    struct _entry_t
+    {
+        wchar_t   c;
+        IndexType t;
+
+        constexpr _entry_t() = default;
+
+        constexpr _entry_t(wchar_t cʹ, IndexType tʹ)
+                : c { cʹ }
+                , t { tʹ }
+        {}
+
+        template <concepts::index I>
+        constexpr _entry_t(utils::type_args<I>)
+                : c { index_to_wchar(I{}) }
+                , t { index_to_type(I{}) }
+        {}
+
+        constexpr friend auto operator==(_entry_t a, _entry_t b) -> bool
+        {
+            if (a.t == IndexType::PROJECTED) return false;
+            if (b.t == IndexType::PROJECTED) return false;
+            return (a.c == b.c and a.t == b.t);
+        }
+    };
+
+
     template <int M>
     struct TensorIndex
     {
         using tensor_index_tag = void;
 
-        struct _entry_t
-        {
-            wchar_t   c;
-            IndexType t;
-
-            constexpr _entry_t() = default;
-
-            constexpr _entry_t(wchar_t cʹ, IndexType tʹ)
-                    : c { cʹ }
-                    , t { tʹ }
-            {}
-
-            template <concepts::index I>
-            constexpr _entry_t(utils::type_args<I>)
-                    : c { index_to_wchar(I{}) }
-                    , t { index_to_type(I{}) }
-            {}
-
-            constexpr friend auto operator==(_entry_t a, _entry_t b) -> bool
-            {
-                if (a.t == IndexType::PROJECTED) return false;
-                if (b.t == IndexType::PROJECTED) return false;
-                return (a.c == b.c and a.t == b.t);
-            }
-        };
-
-        std::array<_entry_t, M> _data{};
+        _entry_t _data[M]{};
         int _size = 0;
 
         consteval TensorIndex() = default;
@@ -110,7 +111,7 @@ namespace ttl
         }
 
         constexpr auto begin() const {
-            return _data.begin();
+            return std::begin(_data);
         }
 
         constexpr auto end() const {
@@ -118,6 +119,7 @@ namespace ttl
         }
 
         constexpr auto operator[](int i) const -> _entry_t const& {
+            expect(i < _size);
             return _data[i];
         }
 
@@ -178,6 +180,18 @@ namespace ttl
                 }
             }
         }
+    };
+
+    template <>
+    struct TensorIndex<0>
+    {
+        // static consteval auto begin() {
+        //     return nullptr;
+        // }
+
+        // static consteval auto end() {
+        //     return nullptr;
+        // }
     };
 
     template <concepts::index... Is>
@@ -290,24 +304,22 @@ namespace ttl
     template <
         concepts::tensor_index auto a,
         concepts::tensor_index auto b,
-        concepts::non_scalar T>
+        concepts::extents T>
     struct map_extents
     {
-        T&& t;
-
-        explicit constexpr map_extents(std::convertible_to<T> auto&& u)
-            : t(std::forward<T>(u))
-        {
-        }
+        T t;
 
         template <int i>
-        constexpr auto map(utils::nttp_args<i> = {}) const -> int {
+        static constexpr auto map() -> int {
+            static_assert(i < a.order());
             return b.nth_index_of(a[i].c, 1);
         }
 
         template <int i>
-        constexpr auto extent(utils::nttp_args<i> tag = {}) const -> int {
-            return ttl::extent<map(tag)>(t);
+        constexpr auto extent() const -> int {
+            static_assert(i < a.order());
+            constexpr int j = map_extents::template map<i>();
+            return ttl::extent<j>(t);
         }
     };
 
@@ -322,13 +334,16 @@ namespace ttl
         explicit constexpr map_extents(std::convertible_to<T> auto&&) {}
 
         template <int i>
-        static constexpr auto map(utils::nttp_args<i> = {}) -> int {
+        static constexpr auto map() -> int {
+            static_assert(i < a.order());
             return b.nth_index_of(a[i].c, 1);
         }
 
         template <int i>
         static constexpr auto extent(utils::nttp_args<i> tag = {}) -> int {
-            return traits::extent_v<map(tag), T>;
+            static_assert(i < a.order());
+            constexpr int j = map_extents::template map<i>();
+            return traits::extent_v<j, T>;
         }
     };
 }

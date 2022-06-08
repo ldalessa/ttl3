@@ -115,8 +115,7 @@ namespace ttl::expressions
 namespace ttl::traits
 {
     /// Propagate the static extents through the bind.
-    template <int M, concepts::tensor A, concepts::tensor_index auto i>
-    requires concepts::static_extents<A>
+    template <int M, concepts::static_extents A, concepts::tensor_index auto i>
     struct extent<M, expressions::Bind<A, i>>
     {
         static constexpr int value = traits::extent_v<M, A>;

@@ -47,12 +47,12 @@ namespace ttl::traits
         using type = double;
     };
 
-    template <int M, int... extents>
-    struct extent<M, Tensor<extents...>>
-    {
-        constexpr static std::array<int, sizeof...(extents)> _extents = { extents... };
-        constexpr static int value = _extents[M];
-    };
+    // template <int M, int... extents>
+    // struct extent<M, Tensor<extents...>>
+    // {
+    //     constexpr static std::array<int, sizeof...(extents)> _extents = { extents... };
+    //     constexpr static int value = _extents[M];
+    // };
 }
 
 template <int... extents>
@@ -81,81 +81,29 @@ struct Tensor
     }
 };
 
-static_assert(ttl::concepts::static_extents<Tensor<2, 2, 2>>);
-
 template <auto>
 [[gnu::deprecated]]
 void print() {}
 
 [[gnu::deprecated]]
-void print_t(auto&&) {}
+void print_t(auto&& u) {}
 
 #include <cstdio>
 
 int main()
 {
-    Tensor<2, 2, 2> A;
-    A(0,0,0) = 1;
-    A(1,0,0) = 2;
-    A(0,1,0) = 3;
-    A(1,1,0) = 4;
-    A(0,0,1) = 5;
-    A(1,0,1) = 6;
-    A(0,1,1) = 7;
-    A(1,1,1) = 8;
-
-    Tensor<2, 2, 2> B;
-    B(0,0,0) = 1;
-    B(0,1,0) = 3;
+    Tensor<2, 2> A, B;
 
     auto i = ttl::index<'i'>;
     auto j = ttl::index<'j'>;
     auto k = ttl::index<'k'>;
     auto l = ttl::index<'l'>;
 
-    // auto C = A(~i,~j,~k) + B(i,j,k);
-    auto C = A(i,j,k) + B(i,j,k);
-
-    double d = C(0,0,0);
-    std::printf("%f\n", d);
-
-    // Tensor<1> B = { 1 };
-    // // double e = B();
-    // auto Bʹ = B(0);
-    // double e = Bʹ;
-
-    // Tensor<> C = {1};
-
-    // auto D = C + C;
-    // // print_t(D);
-    // double d = D();
-    // std::printf("%f\n", d);
-
-    // auto Aʹ =
-    A(i,j,k);
-
-    // for (int i = 0; i < 2; ++i) {
-    //     for (int j = 0; j < 2; ++j) {
-    //         for (int k = 0; k < 2; ++k) {
-    //             double x = Aʹ.evaluate(ttl::ScalarIndex(i, j, k));
-    //             Aʹ.evaluate(ttl::ScalarIndex(i, j, k)) = 0;
-    //             double y = Aʹ.evaluate(ttl::ScalarIndex(i, j, k));
-    //             std::printf("%f, %f\n", x, y);
-    //         }
-    //     }
-    // }
-
-    // ttl::Index<'i'> i;
-    // albert::Index<'j'> j;
-    // albert::Tensor<double, 1, 3> a = { 1, 2, 3 };
-    // a(0) = 1;
-    // albert::Tensor<double, 1, 3> b;
-    // albert::Tensor<double, 0, 0> c = { 2 };
-    // albert::Tensor<double, 2, 3> A = {
-    //   1, 2, 3,
-    //   4, 5, 6,
-    //   7, 8, 9
-    // };
-
-    // a(j) += A(j,i)*a(i);
+    auto C = A(i,~k) * B(k, j);
+    // print_t(C);
+    // print_t(C.outer());
+    auto D = C(~l,l);
+    // print_t(D);
+    // print_t(D.outer());
+    double d = D;
 }

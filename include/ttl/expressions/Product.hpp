@@ -41,15 +41,31 @@ namespace ttl::expressions
             return evaluate(ScalarIndex<0>{});
         }
 
+        template <int M>
+        constexpr auto extent() const -> int
+        {
+            static_assert(M < _order);
+            map_extents<_contracted, _ai, A> extents{_a};
+            return ttl::extent<M>(extents);
+        }
+
         constexpr auto evaluate(ScalarIndex<_order> const& index) const -> scalar_type
         {
+            if constexpr (concepts::static_extents<A> and concepts::static_extents<B>) {
+                static_assert(_validate_shapes());
+            }
+            else {
+                expect(_validate_shapes());
+            }
+
+            map_extents<_inner, _ai, A> extents{_a};
             scalar_type c{};
             ScalarIndex<_inner.size()> i = index;
             do {
-                auto&& a = ttl::evaluate(this->_a, ttl::select<_inner, _ai>(i));
-                auto&& b = ttl::evaluate(this->_b, ttl::select<_inner, _bi>(i));
+                auto&& a = ttl::evaluate(_a, ttl::select<_inner, _ai>(i));
+                auto&& b = ttl::evaluate(_b, ttl::select<_inner, _bi>(i));
                 c += op(FWD(a), FWD(b));
-            } while (ttl::carry_sum_inc<_order>(i, this->_a));
+            } while (ttl::carry_sum_inc<_order>(i, extents));
             return c;
         }
 
@@ -69,14 +85,24 @@ namespace ttl::expressions
             constexpr int n = _contracted.size();
             return [&]<int... i>(utils::sequence<i...>)
             {
-                map_extents<_contracted, _ai, A> a{this->_a};
-                map_extents<_contracted, _bi, B> b{this->_b};
+                map_extents<_contracted, _ai, A> a{_a};
+                map_extents<_contracted, _bi, B> b{_b};
                 return ((ttl::extent<i>(a) == ttl::extent<i>(b)) && ...);
             }(utils::sequence_v<n>);
         }
 
-        static_assert(not concepts::static_extents<A> or
-                      not concepts::static_extents<B> or
-                      _validate_shapes());
+        // static_assert(not concepts::static_extents<A> or
+        //               not concepts::static_extents<B> or
+        //               _validate_shapes());
+    };
+}
+
+namespace ttl::traits
+{
+    /// Propagate the static extents through the bind.
+    template <int M, concepts::static_extents A, concepts::static_extents B, auto op>
+    struct extent<M, expressions::Product<A, B, op>>
+    {
+        static constexpr int value = traits::extent_v<M, A>;
     };
 }
