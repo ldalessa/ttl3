@@ -69,5 +69,4 @@ namespace ttl::utils
     };
 
     inline constexpr _multiply_fn multiply{0};
-
 }

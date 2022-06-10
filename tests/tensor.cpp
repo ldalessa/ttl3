@@ -1,5 +1,6 @@
 #include "Tensor.hpp"
 #include "common.hpp"
+#include "ttl/ttl.hpp"
 #include "ttl/utils/type_args.hpp"
 
 using ttl::tests::Tensor;
@@ -9,17 +10,16 @@ using ttl::utils::types;
 template <class T>
 constexpr bool concepts(type_args<T> = {})
 {
-    bool passed = true;
-
-    passed &= ttl::concepts::tensor<Tensor<T>>;
-    passed &= ttl::concepts::tensor<Tensor<T, 1>>;
-    passed &= ttl::concepts::tensor<Tensor<T, 3>>;
-    passed &= ttl::concepts::tensor<Tensor<T, 1, 1>>;
-    passed &= ttl::concepts::tensor<Tensor<T, 3, 3>>;
-    passed &= ttl::concepts::tensor<Tensor<T, 3, 3, 3>>;
-    passed &= ttl::concepts::tensor<Tensor<T, 8, 8, 8, 8, 8, 8, 8, 8>>;
-
-    return passed;
+    static_assert(ttl::concepts::tensor<Tensor<T>>);
+    static_assert(ttl::concepts::scalar<Tensor<T>>);
+    static_assert(ttl::concepts::expression<Tensor<T>>);
+    static_assert(ttl::concepts::tensor<Tensor<T, 1>>);
+    static_assert(ttl::concepts::tensor<Tensor<T, 3>>);
+    static_assert(ttl::concepts::tensor<Tensor<T, 1, 1>>);
+    static_assert(ttl::concepts::tensor<Tensor<T, 3, 3>>);
+    static_assert(ttl::concepts::tensor<Tensor<T, 3, 3, 3>>);
+    static_assert(ttl::concepts::tensor<Tensor<T, 8, 8, 8, 8, 8, 8, 8, 8>>);
+    return true;
 }
 
 template <class T>
@@ -77,7 +77,7 @@ constexpr bool aggregate_ctor(type_args<T>)
 {
   bool passed = true;
 
-  Tensor<T> a{ T(1) };
+  Tensor<T> a{ 1 };
   passed &= TTL_CHECK(a[0] == 1);
 
   Tensor<T, 1> b{ T(1) };

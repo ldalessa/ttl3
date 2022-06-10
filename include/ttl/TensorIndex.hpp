@@ -15,6 +15,8 @@
 
 namespace ttl
 {
+    // Private to the TensorIndex class template, but doesn't depend on a
+    // template parameter.
     struct _entry_t
     {
         wchar_t   c;
@@ -47,7 +49,7 @@ namespace ttl
     {
         using tensor_index_tag = void;
 
-        _entry_t _data[M]{};
+        std::array<_entry_t, M> _data{};
         int _size = 0;
 
         consteval TensorIndex() = default;
@@ -180,18 +182,6 @@ namespace ttl
                 }
             }
         }
-    };
-
-    template <>
-    struct TensorIndex<0>
-    {
-        // static consteval auto begin() {
-        //     return nullptr;
-        // }
-
-        // static consteval auto end() {
-        //     return nullptr;
-        // }
     };
 
     template <concepts::index... Is>

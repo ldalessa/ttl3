@@ -51,13 +51,6 @@ namespace ttl::expressions
 
         constexpr auto evaluate(ScalarIndex<_order> const& index) const -> scalar_type
         {
-            if constexpr (concepts::static_extents<A> and concepts::static_extents<B>) {
-                static_assert(_validate_shapes());
-            }
-            else {
-                expect(_validate_shapes());
-            }
-
             map_extents<_inner, _ai, A> extents{_a};
             scalar_type c{};
             ScalarIndex<_inner.size()> i = index;
@@ -90,10 +83,6 @@ namespace ttl::expressions
                 return ((ttl::extent<i>(a) == ttl::extent<i>(b)) && ...);
             }(utils::sequence_v<n>);
         }
-
-        // static_assert(not concepts::static_extents<A> or
-        //               not concepts::static_extents<B> or
-        //               _validate_shapes());
     };
 }
 

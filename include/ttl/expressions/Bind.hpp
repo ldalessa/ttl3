@@ -26,7 +26,7 @@ namespace ttl::expressions
         concepts::tensor_index auto _index>
     struct Bind : Bindable<Bind<A, _index>>
     {
-        using projected_index_t = ScalarIndex<_index.capacity()>;
+        using projected_index_t = ScalarIndex<_index.size()>;
         using scalar_type = traits::scalar_type_t<A>;
 
         static constexpr auto _outer = _index.outer();

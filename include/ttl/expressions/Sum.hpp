@@ -53,10 +53,15 @@ namespace ttl::expressions
             return ttl::extent<M>(_a);
         }
 
-
         constexpr auto evaluate(ScalarIndex<_order> const& i) const -> scalar_type
         {
-            expect(_validate_shapes());
+            // if constexpr (concepts::static_extents<A> and concepts::static_extents<B>) {
+            //     static_assert(_validate_shapes());
+            // }
+            // else {
+            //     expect(_validate_shapes());
+            // }
+
             auto&& a = ttl::evaluate(_a, i);
             auto&& b = ttl::evaluate(_b, ttl::select<_ai, _bi>(i));
             return op(FWD(a), FWD(b));
@@ -80,10 +85,6 @@ namespace ttl::expressions
                 return ((ttl::extent<i>(a) == ttl::extent<i>(b)) && ...);
             }(utils::sequence_v<_order>);
         }
-
-        static_assert(not concepts::static_extents<A> or
-                      not concepts::static_extents<B> or
-                      _validate_shapes());
     };
 }
 

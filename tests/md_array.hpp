@@ -18,7 +18,6 @@ namespace ttl::tests
     ///
     /// We're using this as backing tensor storage for testing purposes.
     template <class T, int... extents>
-    requires ((extents > 0) && ...)
     struct md_array
     {
         /// Array order.
@@ -39,6 +38,7 @@ namespace ttl::tests
 
         /// Number of elements.
         static constexpr int _size = (extents * ... * 1);
+        static_assert(0 < _size);
 
         /// Allocate storage.
         T _data[_size];

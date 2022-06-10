@@ -8,7 +8,7 @@
 namespace ttl::concepts
 {
     template <class T>
-    concept non_scalar = tensor<T> and requires (T t) {
+    concept non_scalar = tensor<T> and (traits::order_v<T> > 0) and requires (T t) {
         { ttl::extent<traits::order_v<T> - 1>(t) } -> std::same_as<int>;
     };
 }

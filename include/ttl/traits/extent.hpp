@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ttl/concepts/scalar.hpp"
 #include <concepts>
 
 namespace ttl::traits

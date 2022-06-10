@@ -7,30 +7,33 @@
 
 namespace ttl
 {
-    template <concepts::expression A, concepts::expression B>
-    constexpr auto operator+(A&& a, B&& b)
+    inline namespace operators
     {
-        return expressions::Sum<A, B, utils::plus> {
-            ._a = FWD(a),
-            ._b = FWD(b)
-        };
-    }
+        template <concepts::expression A, concepts::expression B>
+        constexpr auto operator+(A&& a, B&& b)
+        {
+            return expressions::Sum<A, B, utils::plus> {
+                ._a = FWD(a),
+                ._b = FWD(b)
+            };
+        }
 
-    template <concepts::expression A, concepts::expression B>
-    constexpr auto operator-(A&& a, B&& b)
-    {
-        return expressions::Sum<A, B, utils::minus> {
-            ._a = FWD(a),
-            ._b = FWD(b)
-        };
-    }
+        template <concepts::expression A, concepts::expression B>
+        constexpr auto operator-(A&& a, B&& b)
+        {
+            return expressions::Sum<A, B, utils::minus> {
+                ._a = FWD(a),
+                ._b = FWD(b)
+            };
+        }
 
-    template <concepts::expression A, concepts::expression B>
-    constexpr auto operator*(A&& a, B&& b)
-    {
-        return expressions::Product<A, B, utils::multiply> {
-            ._a = FWD(a),
-            ._b = FWD(b)
-        };
+        template <concepts::expression A, concepts::expression B>
+        constexpr auto operator*(A&& a, B&& b)
+        {
+            return expressions::Product<A, B, utils::multiply> {
+                ._a = FWD(a),
+                ._b = FWD(b)
+            };
+        }
     }
 }

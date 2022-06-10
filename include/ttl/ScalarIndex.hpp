@@ -57,7 +57,7 @@ namespace ttl
     inline constexpr auto select(ScalarIndex<from.size()> const &in)
         -> ScalarIndex<to.size()>
     {
-        ScalarIndex<to.capacity()> out{};
+        ScalarIndex<to.size()> out{};
 
         for (int i = 0; i < out.size(); ++i) {
             auto&& [c, t] = to[i];
@@ -76,7 +76,7 @@ namespace ttl
             ScalarIndex<to.size()> const& projected)
         -> ScalarIndex<to.size()>
     {
-        ScalarIndex<to.capacity()> out = projected;
+        ScalarIndex<to.size()> out = projected;
 
         for (int i = 0; i < out.size(); ++i) {
             auto&& [c, t] = to[i];

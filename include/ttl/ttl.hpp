@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ttl/assign.hpp"
 #include "ttl/Bindable.hpp"
 #include "ttl/Index.hpp"
 #include "ttl/operators.hpp"

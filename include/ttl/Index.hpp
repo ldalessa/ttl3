@@ -32,13 +32,13 @@ namespace ttl
     template <auto is>
     inline constexpr CovariantIndex<is> index;
 
-    template <wchar_t... is>
-    static consteval auto operator~(CovariantIndex<is...>) -> ContravariantIndex<is...> {
+    template <wchar_t i>
+    static constexpr auto operator~(CovariantIndex<i>) -> ContravariantIndex<i> {
         return {};
     }
 
-    template <wchar_t... is>
-    static consteval auto operator~(ContravariantIndex<is...>) -> CovariantIndex<is...> {
+    template <wchar_t i>
+    static constexpr auto operator~(ContravariantIndex<i>) -> CovariantIndex<i> {
         return {};
     }
 
