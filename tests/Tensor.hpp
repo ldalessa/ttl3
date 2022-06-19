@@ -41,7 +41,7 @@ namespace ttl::traits
     };
 
     template <int M, class T, int... extents>
-    requires (M > 1)
+    requires (0 <= M and M < sizeof...(extents))
     struct extent<M, ttl::tests::Tensor<T, extents...>>
     {
         constexpr static std::array<int, sizeof...(extents)> _extents = { extents... };
@@ -71,6 +71,7 @@ namespace ttl::tests
         {
         }
 
+        /// Allow implicit conversion from expressions.
         template <class Expression>
         requires (ttl::concepts::non_scalar<Expression> and
                   ttl::concepts::expression<Expression> and
@@ -105,5 +106,38 @@ namespace ttl::tests
             return this->_at(*this, std::move(i));
         }
     };
+
+    namespace concepts {
+        template <int Order, class Expression>
+        concept expression_of_order = (
+                ttl::concepts::expression<Expression> and
+                ttl::concepts::static_extents<Expression> and
+                ttl::traits::order_v<Expression> == Order);
+    }
+
+    template <class Expression> requires (concepts::expression_of_order<0, Expression>)
+    Tensor(Expression&&) -> Tensor<ttl::traits::scalar_type_t<Expression>>;
+
+    template <class Expression> requires (concepts::expression_of_order<1, Expression>)
+    Tensor(Expression&&) -> Tensor<ttl::traits::scalar_type_t<Expression>,
+                                   ttl::traits::extent_v<0, Expression>>;
+
+    template <class Expression> requires (concepts::expression_of_order<2, Expression>)
+    Tensor(Expression&&) -> Tensor<ttl::traits::scalar_type_t<Expression>,
+                                   ttl::traits::extent_v<0, Expression>,
+                                   ttl::traits::extent_v<1, Expression>>;
+
+    template <class Expression> requires (concepts::expression_of_order<3, Expression>)
+    Tensor(Expression&&) -> Tensor<ttl::traits::scalar_type_t<Expression>,
+                                   ttl::traits::extent_v<0, Expression>,
+                                   ttl::traits::extent_v<1, Expression>,
+                                   ttl::traits::extent_v<2, Expression>>;
+
+    template <class Expression> requires (concepts::expression_of_order<4, Expression>)
+    Tensor(Expression&&) -> Tensor<ttl::traits::scalar_type_t<Expression>,
+                                   ttl::traits::extent_v<0, Expression>,
+                                   ttl::traits::extent_v<1, Expression>,
+                                   ttl::traits::extent_v<2, Expression>,
+                                   ttl::traits::extent_v<3, Expression>>;
 }
 
