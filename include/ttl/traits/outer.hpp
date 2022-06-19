@@ -1,31 +1,67 @@
 #pragma once
 
-#include "ttl/TensorIndex.hpp"
-#include "ttl/concepts/scalar.hpp"
-#include "ttl/concepts/tensor_index.hpp"
-#include <concepts>
+#include "ttl/FWD.hpp"
+#include "ttl/index.hpp"
+#include "ttl/tag_invoke.hpp"
+#include "ttl/concepts/index.hpp"
+#include "ttl/concepts/tensor.hpp"
+#include "ttl/traits/order.hpp"
 
 namespace ttl::traits
 {
-    template <class>
-    struct outer
-    {
-        static constexpr struct{} value{};
-    };
-
-    template <class T>
-    requires requires {{ T::outer() } -> concepts::tensor_index; }
-    struct outer<T>
-    {
-        static constexpr concepts::tensor_index auto value = T::outer();
-    };
+    template <concepts::tensor>
+    struct outer;
 
     template <concepts::scalar T>
     struct outer<T>
     {
-        static constexpr TensorIndex<0> value = {};
+        static constexpr index<0> value{};
+    };
+}
+
+namespace ttl::concepts
+{
+    template <class T>
+    concept _has_outer_trait = requires {
+        { traits::outer<std::remove_cvref_t<T>>::value } -> concepts::index;
+    };
+}
+
+namespace ttl::cpos
+{
+    struct outer
+    {
+        template <concepts::_has_outer_trait T>
+        constexpr friend auto tag_invoke(outer, T&&) {
+            return traits::outer<std::remove_cvref_t<T>>::value;
+        }
+
+        constexpr auto operator()(auto&& obj) const -> concepts::index auto {
+            return tag_invoke(*this, FWD(obj));
+        }
+
+        consteval outer(cpo) {}
+    };
+}
+
+namespace ttl
+{
+    constexpr cpos::outer outer{cpo_tag};
+}
+
+namespace ttl::concepts
+{
+    template <class T>
+    concept _has_outer = requires (T t) {
+        { ttl::outer(t) } -> concepts::index;
     };
 
     template <class T>
-    inline constexpr auto outer_v = outer<std::remove_cvref_t<T>>::value;
+    concept _has_static_outer = _has_outer<T> and _has_outer_trait<T>;
+}
+
+namespace ttl
+{
+    template <concepts::_has_static_outer T>
+    constexpr concepts::index auto outer_v = traits::outer<std::remove_cvref_t<T>>::value;
 }
