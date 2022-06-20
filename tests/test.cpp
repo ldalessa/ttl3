@@ -30,28 +30,28 @@ static_assert(not ttl::concepts::expression<vector3d>);
 static_assert(ttl::concepts::has_static_extents<vector3d>);
 static_assert(not ttl::concepts::has_static_outer<vector3d>);
 
-using matrixNd = ttl::tests::dynamic_tensor<double, 2>;
-static_assert(not ttl::concepts::scalar<matrixNd>);
-static_assert(ttl::concepts::tensor<matrixNd>);
-static_assert(not ttl::concepts::expression<matrixNd>);
-static_assert(not ttl::concepts::has_static_extents<matrixNd>);
-static_assert(not ttl::concepts::has_static_outer<matrixNd>);
+// using matrixNd = ttl::tests::dynamic_tensor<double, 2>;
+// static_assert(not ttl::concepts::scalar<matrixNd>);
+// static_assert(ttl::concepts::tensor<matrixNd>);
+// static_assert(not ttl::concepts::expression<matrixNd>);
+// static_assert(not ttl::concepts::has_static_extents<matrixNd>);
+// static_assert(not ttl::concepts::has_static_outer<matrixNd>);
 
 int main()
 {
-    vector3d x;
-    x(0) = 0.0;
-    x(1) = 0.1;
-    x(2) = 0.2;
+    // vector3d x;
+    // x(0) = 0.0;
+    // x(1) = 0.1;
+    // x(2) = 0.2;
 
-    matrixNd A(3, 3);
-    A(0,0) = 0.0;
-    A(0,1) = 0.1;
-    A(0,2) = 0.2;
-    A(1,0) = 1.0;
-    A(1,1) = 1.1;
-    A(1,2) = 1.2;
-    A(2,0) = 2.0;
-    A(2,1) = 2.1;
-    A(2,2) = 2.2;
+    // matrixNd A(3, 3);
+    // A(0,0) = 0.0;
+    // A(0,1) = 0.1;
+    // A(0,2) = 0.2;
+    // A(1,0) = 1.0;
+    // A(1,1) = 1.1;
+    // A(1,2) = 1.2;
+    // A(2,0) = 2.0;
+    // A(2,1) = 2.1;
+    // A(2,2) = 2.2;
 }

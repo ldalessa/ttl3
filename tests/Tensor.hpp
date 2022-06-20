@@ -4,46 +4,53 @@
 #include "ttl/ttl.hpp"
 #include <algorithm>
 #include <array>
+#include <concepts>
 #include <utility>
 
 namespace ttl::tests
 {
-    template <class, ttl::concepts::shape auto>
-    struct Tensor;
-}
-
-// Specialize the traits that we need for md_array and Tensor to be considered
-// ttl::tensors.
-namespace ttl::traits
-{
     template <class T, ttl::concepts::shape auto _shape>
-    struct tensor<ttl::tests::Tensor<T, _shape>>
-    {
-        using value_type = T;
-        static constexpr int order = _shape.size();
-        static constexpr auto extents = _shape;
-    };
-}
-
-namespace ttl::tests
-{
-    ///
-    template <class T, ttl::concepts::shape auto _shape>
-    struct Tensor
-        : md_array<T, _shape>
-        // , ttl::Bindable<Tensor<T, extents...>>
+    struct Tensor : md_array<T, _shape>
+                  , ttl::bindable<Tensor<T, _shape>>
     {
         using md_array<T, _shape>::_data;;
         using md_array<T, _shape>::order;
         using md_array<T, _shape>::size;
+        using ttl::bindable<Tensor<T, _shape>>::operator();
 
         constexpr Tensor() = default;
 
         /// Variadic constructor for a set of scalars.
-        constexpr Tensor(ttl::concepts::scalar auto&&... vs)
+        constexpr Tensor(std::convertible_to<T> auto&&... vs)
             requires (0 < sizeof...(vs) and sizeof...(vs) <= size())
             : md_array<T, _shape>{ static_cast<T>(vs)... }
         {
+        }
+
+        constexpr static auto _evaluate(auto&& self, ttl::scalar_index<order()> const& index)
+            -> decltype(auto)
+        {
+            return [&]<std::size_t... is>(std::index_sequence<is...>) {
+                return std::forward<md_array<T, _shape>>(self)(index[is]...);
+            }(std::make_index_sequence<order()>{});
+        }
+
+        constexpr friend auto tag_invoke(
+                ttl::cpos::evaluate,
+                Tensor const& t,
+                ttl::scalar_index<order()> const& index)
+            -> decltype(auto)
+        {
+            return _evaluate(t, index);
+        }
+
+        constexpr friend auto tag_invoke(
+                ttl::cpos::evaluate,
+                Tensor& t,
+                ttl::scalar_index<order()> const& index)
+            -> decltype(auto)
+        {
+            return _evaluate(t, index);
         }
 
         // /// Allow implicit conversion from expressions.
@@ -116,3 +123,13 @@ namespace ttl::tests
     //                                ttl::traits::extent_v<3, Expression>>;
 }
 
+namespace ttl::traits
+{
+    template <class T, ttl::concepts::shape auto _shape>
+    struct tensor<ttl::tests::Tensor<T, _shape>>
+    {
+        using value_type = T;
+        static constexpr int order = _shape.size();
+        static constexpr auto extents = _shape;
+    };
+}

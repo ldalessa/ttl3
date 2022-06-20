@@ -23,20 +23,22 @@ namespace ttl
         int _types[M]{};
         int _size{};
 
-        consteval index(std::convertible_to<wchar_t> auto... is)
-            : _data { is... }
-            , _types {}
-            , _size { sizeof...(is) }
+        consteval index() = default;
+
+        /// This constructor is designed for use by the end-user.
+        consteval index(std::same_as<wchar_t> auto is)
+            : _data { is }
+            , _types { COV }
+            , _size { 1 }
         {
-            _validate();
         }
 
-        template <int A, int B>
-        requires (A + B <= M)
-        constexpr index(index<A> const& a, index<B> const& b)
+        /// This constructor is used for all other construction.
+        template <concepts::index_or_integral... Is>
+        requires (concepts::index<Is> || ...)
+        constexpr explicit index(Is&&... is)
         {
-            for (auto [c, t] : a) push_back(c, t);
-            for (auto [c, t] : b) push_back(c, t);
+            (_append(is), ...);
             _validate();
         }
 
@@ -74,6 +76,14 @@ namespace ttl
             constexpr friend auto operator<=>(const_iterator const&, const_iterator const&) = default;
         };
 
+        static consteval auto capacity() -> int {
+            return M;
+        }
+
+        constexpr auto size() const -> int {
+            return _size;
+        }
+
         constexpr auto begin() const -> const_iterator {
             return {
                 ._index = this,
@@ -86,10 +96,6 @@ namespace ttl
                 ._index = this,
                 ._i = _size
             };
-        }
-
-        constexpr auto size() const -> int {
-            return _size;
         }
 
         constexpr auto push_back(wchar_t c, int t = IGNORE) -> index& {
@@ -120,6 +126,18 @@ namespace ttl
             return std::nullopt;
         }
 
+        constexpr auto _append(std::integral auto& b) -> index& {
+            push_back(0, IGNORE);
+            return *this;
+        }
+
+        constexpr auto _append(concepts::index auto& b) -> index& {
+            for (auto&& [c, t] : b) {
+                push_back(c, t);
+            }
+            return *this;
+        }
+
         constexpr auto _validate() const {
             for (int i = 0; i < _size; ++i) {
                 int k = 0;
@@ -142,10 +160,9 @@ namespace ttl
         }
     };
 
-    index(auto... is) -> index<sizeof...(is)>;
-
-    template <int A, int B>
-    index(index<A>, index<B>) -> index<A + B>;
+    // Single CTAD for inferring the index capacity for all constructors.
+    template <concepts::index_or_integral... Is>
+    index(Is... is) -> index<(((std::integral<Is>) ?: Is::capacity()) + ... + 0)>;
 
     inline constexpr auto operator==(concepts::index auto const& a, concepts::index auto const& b)
         -> bool

@@ -1,7 +1,10 @@
 #pragma once
 
 #include "ttl/FWD.hpp"
+#include "ttl/bindable.hpp"
+#include "ttl/evaluate.hpp"
 #include "ttl/get.hpp"
+#include "ttl/scalar_index.hpp"
 #include "ttl/tag_invoke.hpp"
 #include "ttl/concepts/expression.hpp"
 #include "ttl/concepts/scalar.hpp"

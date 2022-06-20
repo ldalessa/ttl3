@@ -1,6 +1,6 @@
 #pragma once
 
-#include <type_traits>
+#include <concepts>
 
 namespace ttl::concepts
 {
@@ -8,4 +8,7 @@ namespace ttl::concepts
     concept index = requires {
         typename std::remove_cvref_t<T>::index_concept;
     };
+
+    template <class T>
+    concept index_or_integral = index<T> or std::integral<T>;
 }
