@@ -18,7 +18,8 @@ namespace ttl::traits
         static constexpr concepts::shape auto value = traits::tensor<std::remove_cvref_t<T>>::extents;
     };
 
-    template <concepts::has_order_zero T>
+    template <class T>
+    requires concepts::has_order_zero<T> and (not concepts::_has_tensor_extents_trait<T>)
     struct extents<T>
     {
         static constexpr std::array<int, 0> value{};
@@ -42,12 +43,15 @@ namespace ttl::cpos
             return traits::extents<std::remove_cvref_t<T>>::value;
         }
 
-        template <concepts::_has_tensor_extents_call T>
+        template <class T>
+        requires concepts::_has_tensor_extents_call<T> and (not concepts::_has_extents_trait<T>)
         constexpr friend auto tag_invoke(extents, T&& t) -> concepts::shape auto {
             return traits::tensor<std::remove_cvref_t<T>>::extents(FWD(t));
         }
 
-        constexpr auto operator()(auto&& obj) const -> concepts::shape auto {
+        constexpr auto operator()(auto&& obj) const -> concepts::shape auto
+            requires requires { tag_invoke(*this, FWD(obj)); }
+        {
             return tag_invoke(*this, FWD(obj));
         }
 

@@ -1,46 +1,38 @@
 #pragma once
 
-#include "ttl/utils/expect.hpp"
-#include "ttl/utils/FWD.hpp"
+#include "ttl/concepts/shape.hpp"
 #include <array>
 #include <concepts>
 #include <numeric>
+#include <utility>
 
 namespace ttl::tests
 {
-    /// Really basic, row-major, multi-dimensional array storage.
-    ///
-    /// usage:
-    ///   md_array<int>           x; // just a scalar
-    ///   md_array<int, 1>        x; // int x[1]
-    ///   md_array<int, 3, 3>     x; // int x[3][3]
-    ///   md_array<int, 7, 42, 1> x; // int x[7][42][1]
-    ///
-    /// We're using this as backing tensor storage for testing purposes.
-    template <class T, int... extents>
+    template <class T, ttl::concepts::shape auto _shape>
     struct md_array
     {
-        /// Array order.
-        static constexpr int _order = sizeof...(extents);
+        template <std::size_t... i>
+        static constexpr auto _unpack(auto&& op, std::index_sequence<i...>) {
+            return FWD(op)(i...);
+        }
 
-        /// A multidimensional index into the array.
-        using _index_t = std::array<int, _order>;
+        static constexpr auto _unpack(auto&& op) {
+            return _unpack(FWD(op), std::make_index_sequence<_shape.size()>{});
+        }
 
-        /// Capture the extents as an array.
-        static constexpr _index_t _extents = { extents... };
+        static constexpr auto _order = _shape.size();
 
-        /// Precompute the strides for _row_major.
-        static constexpr _index_t _strides = [] {
-            _index_t strides;
-            std::exclusive_scan(_extents.rbegin(), _extents.rend(), strides.rbegin(), 1, std::multiplies{});
+        static constexpr auto _size = _unpack([](auto... i) {
+            return (_shape[i] * ... * 1);
+        });
+
+        static constexpr auto _strides = [] {
+            using shape_t = std::remove_const_t<decltype(_shape)>;
+            shape_t strides{};
+            std::exclusive_scan(_shape.begin(), _shape.end(), strides.begin(), 1, std::multiplies{});
             return strides;
         }();
 
-        /// Number of elements.
-        static constexpr int _size = (extents * ... * 1);
-        static_assert(0 < _size);
-
-        /// Allocate storage.
         T _data[_size];
 
         /// Total number of "dimensions" ("N-dimensional array" usage).
@@ -59,17 +51,21 @@ namespace ttl::tests
         }
 
         /// Linear iteration.
-        constexpr auto end() {
+        constexpr auto end() const {
             return std::end(_data);
         }
 
         /// Multi-dimensional access.
-        constexpr auto operator()(std::integral auto... is) const -> T const& {
+        constexpr auto operator()(std::integral auto... is) const -> T const&
+            requires(sizeof...(is) == order())
+        {
             return _at(*this, is...);
         }
 
         /// Multi-dimensional access.
-        constexpr auto operator()(std::integral auto... is) -> T& {
+        constexpr auto operator()(std::integral auto... is) -> T&
+            requires(sizeof...(is) == order())
+        {
             return _at(*this, is...);
         }
 
@@ -87,26 +83,34 @@ namespace ttl::tests
         static constexpr auto _at(auto&& self, std::convertible_to<int> auto... is) -> auto&
             requires (sizeof...(is) == order())
         {
-            return _at(FWD(self), _index_t{int(is)...});
+            return FWD(self)._data[_row_major(is...)];
         }
 
-        /// Multidimensional access (auto& return handles const)
-        static constexpr auto _at(auto&& self, auto&& index) -> auto&
-            requires requires {{ index[0] } -> std::convertible_to<int>; }
+        static constexpr auto _row_major(std::integral auto... is) -> std::integral auto
+            requires(sizeof...(is) == order())
         {
-            return FWD(self)._data[_row_major(FWD(index))];
+            return _unpack([=](auto... js) {
+                return ((is * js) + ... + 0);
+            });
         }
 
-        /// Compute a row-major index offset (msb in is[0]).
-        static constexpr auto _row_major(auto&& index) -> int
-            requires requires {{ index[0] } -> std::convertible_to<int>; }
-        {
-            int n = 0;
-            for (int i = 0; i < _order; ++i) {
-                n += index[i] * _strides[i];
-            }
-            expect(0 <= n and n < _size);
-            return n;
-        }
+        // /// Multidimensional access (auto& return handles const)
+        // static constexpr auto _at(auto&& self, auto&& index) -> auto&
+        //     requires requires {{ index[0] } -> std::convertible_to<int>; }
+        // {
+        //     return FWD(self)._data[_row_major(FWD(index))];
+        // }
+
+        // /// Compute a row-major index offset (msb in is[0]).
+        // static constexpr auto _row_major(auto&& index) -> int
+        //     requires requires {{ index[0] } -> std::convertible_to<int>; }
+        // {
+        //     int n = 0;
+        //     for (int i = 0; i < _order; ++i) {
+        //         n += index[i] * _strides[i];
+        //     }
+        //     expect(0 <= n and n < _size);
+        //     return n;
+        // }
     };
 }
