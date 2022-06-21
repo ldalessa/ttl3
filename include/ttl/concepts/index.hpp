@@ -6,9 +6,9 @@ namespace ttl::concepts
 {
     template <class T>
     concept index = requires {
-        typename std::remove_cvref_t<T>::index_concept;
+        typename std::remove_cvref_t<T>::index_concept_tag;
     };
 
     template <class T>
-    concept index_or_integral = index<T> or std::integral<T>;
+    concept index_or_integral = std::integral<T> or index<T>;
 }

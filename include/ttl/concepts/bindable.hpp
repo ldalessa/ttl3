@@ -13,7 +13,7 @@ namespace ttl::concepts
     {
         template <std::size_t... is>
         static void test(T t, std::index_sequence<is...>)
-            requires requires { { t(ttl::index<1>{wchar_t(is)}...) } -> bind_expression; };
+            requires requires { { t(ttl::index<wchar_t{is}>{}...) } -> bind_expression; };
 
         static void test(T t)
             requires requires { test(t, std::make_index_sequence<order_v<T>>{}); };

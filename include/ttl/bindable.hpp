@@ -3,6 +3,7 @@
 #include "ttl/FWD.hpp"
 #include "ttl/evaluate.hpp"
 #include "ttl/scalar_index.hpp"
+#include "ttl/tensor_index.hpp"
 #include "ttl/concepts/index.hpp"
 #include "ttl/expressions/bind.hpp"
 #include "ttl/traits/order.hpp"
@@ -31,17 +32,17 @@ namespace ttl
     template <concepts::has_order T>
     struct bindable
     {
-        constexpr auto operator()(concepts::index_or_integral auto&&... is) const& -> decltype(auto)
+        constexpr auto operator()(concepts::index_or_integral auto... is) const& -> decltype(auto)
         {
             return _bind(_derived(), is...);
         }
 
-        constexpr auto operator()(concepts::index_or_integral auto&&... is) && -> decltype(auto)
+        constexpr auto operator()(concepts::index_or_integral auto... is) && -> decltype(auto)
         {
             return _bind(_derived(), is...);
         }
 
-        constexpr auto operator()(concepts::index_or_integral auto&&... is) & -> decltype(auto)
+        constexpr auto operator()(concepts::index_or_integral auto... is) & -> decltype(auto)
         {
             return _bind(_derived(), is...);
         }
@@ -61,20 +62,19 @@ namespace ttl
             return *(static_cast<T*>(this));
         }
 
-        template <concepts::index_or_integral... Is>
-        static constexpr auto _bind(auto&& self, Is&&... is) -> decltype(auto)
+        static constexpr auto _bind(auto&& self, std::integral auto... is) -> decltype(auto)
         {
             static_assert(order_v<bindable> == sizeof...(is), "Incorrect number of indices");
+            return ttl::evaluate(FWD(self), scalar_index{is...});
+        }
 
-            if constexpr ((std::integral<Is> && ...)) {
-                return evaluate(FWD(self), scalar_index{is...});
-            }
-            else {
-                return expressions::bind<decltype(self)> {
-                    ._a = FWD(self),
-                    ._index = index{is...}
-                };
-            }
+        template <concepts::index_or_integral... Is>
+        requires (concepts::index<Is> || ...)
+        static constexpr auto _bind(auto&& self, Is... is)
+        {
+            static_assert(order_v<bindable> == sizeof...(Is), "Incorrect number of indices");
+            constexpr tensor_index i{is...};
+            return expressions::bind(FWD(self), is...);
         }
     };
 }

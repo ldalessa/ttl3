@@ -33,24 +33,35 @@ namespace ttl::tests
         }
 
         /// Multi-dimensional access.
-        constexpr auto operator()(std::integral auto... is) const -> auto const&
+        constexpr auto operator()(std::integral auto... is) const & -> auto&
         {
             return _at(_derived(), is...);
         }
 
         /// Multi-dimensional access.
-        constexpr auto operator()(std::integral auto... is) -> auto&
+        constexpr auto operator()(std::integral auto... is) && -> auto&
+        {
+            return _at(_derived(), is...);
+        }
+
+        /// Multi-dimensional access.
+        constexpr auto operator()(std::integral auto... is) & -> auto&
         {
             return _at(_derived(), is...);
         }
 
         // Linear access.
-        constexpr auto operator[](std::integral auto i) const -> auto const& {
+        constexpr auto operator[](std::integral auto i) const& -> auto& {
             return _derived()._data[i];
         }
 
         // Linear access.
-        constexpr auto operator[](std::integral auto i) -> auto& {
+        constexpr auto operator[](std::integral auto i) && -> auto& {
+            return _derived()._data[i];
+        }
+
+        // Linear access.
+        constexpr auto operator[](std::integral auto i) & -> auto& {
             return _derived()._data[i];
         }
 
