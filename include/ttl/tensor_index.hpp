@@ -102,6 +102,10 @@ namespace ttl
             };
         }
 
+        constexpr auto data(int i) const -> wchar_t {
+            return _data[i].c;
+        }
+
         constexpr auto push_back(wchar_t c, int t = IGNORE) -> tensor_index& {
             _data[_size] = c;
             _types[_size] = t;
@@ -128,6 +132,25 @@ namespace ttl
                 }
             }
             return std::nullopt;
+        }
+
+        constexpr auto index_map(concepts::tensor_index auto&& from) const
+            -> std::array<int, M>
+        {
+            std::array<int, M> out;
+            int i = 0;
+            for (auto&& [c, _] : *this) {
+                if (auto j = from.index_of(c, 2)) {
+                    throw "map is not unique";
+                }
+                if (auto j = from.index_of(c)) {
+                    out[i++] = *j;
+                }
+                else {
+                    throw "could not map index";
+                }
+            }
+            return out;
         }
 
         constexpr auto _append(std::integral auto& b) -> tensor_index& {

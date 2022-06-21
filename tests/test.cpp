@@ -50,6 +50,7 @@ int main()
 
     ttl::index<'i'> i;
     auto b = x(i);
+    constexpr auto c = ttl::extents(b);
 
     matrixNd A(3, 3);
     A(0,0) = 0.0;
@@ -64,5 +65,6 @@ int main()
     fmt::print("{}\n", A._data);
 
     ttl::index<'j'> j;
-    auto c = A(i,j);
+    auto d = A(i,j);
+    auto e = ttl::extents(d);
 }
