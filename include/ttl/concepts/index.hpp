@@ -10,5 +10,5 @@ namespace ttl::concepts
     };
 
     template <class T>
-    concept index_or_integral = std::integral<T> or index<T>;
+    concept index_or_integral = std::integral<std::remove_cvref_t<T>> or index<T>;
 }

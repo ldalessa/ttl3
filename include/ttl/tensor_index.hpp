@@ -11,13 +11,14 @@
 
 namespace ttl
 {
+
+    static constexpr int IGNORE = 0;
+
     template <int M>
     requires (M >= 0)
     struct tensor_index
     {
         using tensor_index_concept_tag = void;
-
-        static constexpr int IGNORE = std::numeric_limits<int>::max();
 
         wchar_t _data[M]{};
         int _types[M]{};
@@ -76,7 +77,7 @@ namespace ttl
             constexpr friend auto operator<=>(const_iterator const&, const_iterator const&) = default;
         };
 
-        static consteval auto capacity() -> int {
+        static constexpr auto capacity() -> int {
             return M;
         }
 
@@ -103,7 +104,7 @@ namespace ttl
         }
 
         constexpr auto data(int i) const -> wchar_t {
-            return _data[i].c;
+            return _data[i];
         }
 
         constexpr auto push_back(wchar_t c, int t = IGNORE) -> tensor_index& {
@@ -116,41 +117,64 @@ namespace ttl
         constexpr auto unique() const -> tensor_index {
             tensor_index out;
             for (auto [c, t] : *this) {
-                if (not index_of(c, 2)) {
+                if (t != IGNORE and count(c) == 1) {
                     out.push_back(c, t);
                 }
             }
             return out;
         }
 
+        constexpr auto n_unique() const -> int {
+            int n = 0;
+            for (auto [c, t] : *this) {
+                n += (t != IGNORE and count(c) == 1);
+            }
+            return n;
+        }
+
+        constexpr auto contracted() const -> tensor_index {
+            tensor_index out;
+            for (auto [c, t] : *this) {
+                if (t != IGNORE and count(c) == 2 and out.count(c) == 0) {
+                    out.push_back(c, IGNORE);
+                }
+            }
+            return out;
+        }
+
+        constexpr auto n_contracted() const -> int {
+            int n = 0;
+            for (auto [c, t] : *this) {
+                n += (t != IGNORE and count(c) == 2);
+            }
+            return n/2;
+        }
+
+        constexpr auto n_projected() const -> int {
+            int n = 0;
+            for (auto&& [_, t] : *this) {
+                n += (t == IGNORE);
+            }
+            return n;
+        }
+
+        constexpr auto count(wchar_t c) const -> int {
+            int sum = 0;
+            for (auto&& [d, _] : *this) {
+                sum += (c == d);
+            }
+            return sum;
+        }
+
         constexpr auto index_of(wchar_t c, int n = 1) const -> std::optional<int> {
             for (int i = 0; i < _size; ++i) {
-                if (_data[i] == c and _types[i] != IGNORE) {
+                if (_data[i] == c) {
                     if (--n == 0) {
                         return i;
                     }
                 }
             }
             return std::nullopt;
-        }
-
-        constexpr auto index_map(concepts::tensor_index auto&& from) const
-            -> std::array<int, M>
-        {
-            std::array<int, M> out;
-            int i = 0;
-            for (auto&& [c, _] : *this) {
-                if (auto j = from.index_of(c, 2)) {
-                    throw "map is not unique";
-                }
-                if (auto j = from.index_of(c)) {
-                    out[i++] = *j;
-                }
-                else {
-                    throw "could not map index";
-                }
-            }
-            return out;
         }
 
         constexpr auto _append(std::integral auto& b) -> tensor_index& {
@@ -180,11 +204,11 @@ namespace ttl
                             throw "index appears more than once";
                         }
 
-                        if (_types[i] + _types[j] == 2 * COVARIANT) {
+                        if (_types[i] + _types[j] == 2) {
                             throw "index appears twice as covariant";
                         }
 
-                        if (_types[i] + _types[j] == 2 * CONTRAVARIANT) {
+                        if (_types[i] + _types[j] == -2) {
                             throw "index appears twice as contravariant";
                         }
                     }
@@ -250,8 +274,8 @@ namespace ttl
         if constexpr (A <= B) {
             tensor_index aa = a.unique(), out;
             tensor_index bb = b.unique();
-            for (auto [c, _] : aa) {
-                if (bb.index_of(c, 2)) {
+            for (auto&& [c, _] : aa) {
+                if (bb.count(c) == 2) {
                     out.push_back(c);
                 }
             }
@@ -261,4 +285,42 @@ namespace ttl
             return b & a;
         }
     }
+
+    template <concepts::tensor_index auto index>
+    constexpr auto unique_v = [] {
+        tensor_index<index.n_unique()> out;
+        for (auto&& [c, t] : index) {
+            if (t != IGNORE and index.count(c) == 1) {
+                out.push_back(c, t);
+            }
+        }
+        return out;
+    }();
+
+    template <concepts::tensor_index auto index>
+    constexpr auto contracted_v = [] {
+        tensor_index<index.n_contracted()> out;
+        for (auto&& [c, t] : index) {
+            if (t != IGNORE and index.count(c) == 2 and out.count(c) == 0) {
+                out.push_back(c, IGNORE);
+            }
+        }
+        return out;
+    }();
+
+    template <concepts::tensor_index auto a, concepts::tensor_index auto b>
+    constexpr auto concat_v = a + b;
+
+    /// Creates a map of the index of each index in from.
+    ///
+    /// The resulting map contains the target index for each of the source
+    /// indices.
+    template <concepts::tensor_index auto from, concepts::tensor_index auto to>
+    constexpr auto index_to_index_map_v = [] {
+        std::array<int, from.size()> out;
+        for (int i = 0; auto&& [c, t] : from) {
+            out[i++] = *to.index_of(c);
+        }
+        return out;
+    }();
 }

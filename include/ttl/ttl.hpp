@@ -5,6 +5,7 @@
 #include "ttl/evaluate.hpp"
 #include "ttl/get.hpp"
 #include "ttl/index.hpp"
+#include "ttl/map_extents.hpp"
 #include "ttl/scalar_index.hpp"
 #include "ttl/tag_invoke.hpp"
 #include "ttl/tensor_index.hpp"

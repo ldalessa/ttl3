@@ -4,6 +4,7 @@
 #include "ttl/scalar_index.hpp"
 #include "ttl/tag_invoke.hpp"
 #include "ttl/traits/order.hpp"
+#include "ttl/traits/value_type.hpp"
 #include <concepts>
 
 namespace ttl

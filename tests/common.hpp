@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdio>
 #include <type_traits>
 #include <experimental/source_location> // clang
@@ -24,6 +25,11 @@ namespace ttl::tests
         throw src;
     }
 
+    template <class...> struct type_args{};
+
+    template <class... Ts>
+    constexpr type_args<Ts...> types{};
+
     constexpr void unused(...) {}
 
     template <auto>
@@ -33,5 +39,11 @@ namespace ttl::tests
     [[gnu::deprecated]]
     void print_t(auto&& u) {
         unused(u);
+    }
+
+    constexpr auto to_int_array(std::convertible_to<int> auto... vs)
+        -> std::array<int, sizeof...(vs)>
+    {
+        return std::array<int, sizeof...(vs)> { vs... };
     }
 }

@@ -11,7 +11,10 @@ namespace ttl::tests
     {
         using ttl::bindable<dynamic_tensor<T, _order>>::operator();
 
+        constexpr dynamic_tensor() requires(_order != 0) = default;
+
         constexpr explicit dynamic_tensor(std::integral auto... extents)
+            requires (sizeof...(extents) == _order)
                 : md_vector<T, _order> { extents... }
         {
         }

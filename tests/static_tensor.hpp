@@ -17,12 +17,10 @@ namespace ttl::tests
         using md_array<T, _shape>::size;
         using ttl::bindable<static_tensor<T, _shape>>::operator();
 
-        constexpr static_tensor() = default;
-
         /// Variadic constructor for a set of scalars.
         constexpr static_tensor(std::convertible_to<T> auto&&... vs)
-            requires (0 < sizeof...(vs) and sizeof...(vs) <= size())
-            : md_array<T, _shape>{ static_cast<T>(vs)... }
+            requires (0 <= sizeof...(vs) and sizeof...(vs) <= size())
+            : md_array<T, _shape>{ ._data{ static_cast<T>(vs)... } }
         {
         }
 
