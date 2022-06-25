@@ -34,7 +34,7 @@ namespace ttl
     namespace _detail {
         struct _get_extents_fn {
             template <has_tensor_traits T>
-            constexpr auto operator()(T&& obj) const -> is_int_array auto&& {
+            constexpr auto operator()(T&& obj) const -> decltype(auto) {
                 return tensor_traits_t<T>::get_extents(FWD(obj));
             }
         };
