@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scalar_index.hpp"
+#include "typed_index.hpp"
 #include "tensor_index.hpp"
 #include "tensor_traits.hpp"
 
