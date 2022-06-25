@@ -23,6 +23,9 @@ namespace ttl
         constexpr explicit _index(std::same_as<int> auto) {}
 
         constexpr explicit _index(wchar_t cʹ, int tʹ) : c(cʹ), t(tʹ) {}
+
+        constexpr bool operator==(_index const&) const = default;
+        constexpr auto operator<=>(_index const&) const = default;
     };
 
     template <int _size>
@@ -112,8 +115,16 @@ namespace ttl
             return true;
         }
 
-        constexpr auto is_permutation(is_tensor_index auto&& b) const -> bool {
+        constexpr auto is_permutation_of(is_tensor_index auto&& b) const -> bool {
             return this->is_subset_of(b) and b.is_subset_of(*this);
+        }
+
+        constexpr auto is_prefix_of(is_tensor_index auto&& b) const -> bool {
+            if (_size > b.size()) return false;
+            for (int i = 0; i < _size; ++i) {
+                if ((*this)[i] != b[i]) return false;
+            }
+            return true;
         }
 
         constexpr auto gather_from(is_tensor_index auto&& b) const {

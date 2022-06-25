@@ -97,6 +97,8 @@ auto d = A(j,i);
 static_assert(ttl::has_member_tensor_traits<decltype(c)>);
 static_assert(ttl::has_member_tensor_traits<decltype(d)>);
 
+double e = A(i,~i);
+
 // static_assert(std::remove_cvref_t<decltype(c)>::get_order() == 2);
 // static_assert(ttl::order<decltype(c)> == 2);
 

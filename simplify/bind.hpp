@@ -34,16 +34,46 @@ namespace ttl
         }
 
         constexpr auto get_extents() const -> array<int, _order> {
-            return {};
+            return _gather_extents(nttp<_outer>);
         }
 
         constexpr operator scalar_type() const requires (_order == 0) {
             return evaluate(typed_index<_outer>{});
         }
 
-        constexpr auto evaluate(typed_index<_outer> const& outer) const -> decltype(auto) {
-            typed_index i = outer + _p;
-            return ttl::evaluate(_a, typed_index<_inner>(outer));
+        constexpr auto evaluate(typed_index<_outer> const& outer) const -> decltype(auto)
+        {
+            array extents = _gather_extents(nttp<_all>);
+            typed_index<_all> i = outer + _p;
+            scalar_type sum{0};
+            do {
+                sum += ttl::evaluate(_a, typed_index<_inner>(i));
+            } while (carry_sum_add<_passthrough.size()>(&i, extents));
+            return sum;
+        }
+
+        constexpr auto evaluate(typed_index<_outer> const& outer) const -> decltype(auto)
+            requires (_contracted.size() == 0)
+        {
+            return ttl::evaluate(_a, typed_index<_inner>(outer + _p));
+        }
+
+        constexpr auto evaluate(typed_index<_outer> const& outer) -> decltype(auto)
+            requires (_contracted.size() == 0)
+        {
+            return ttl::evaluate(_a, typed_index<_inner>(outer + _p));
+        }
+
+        template <is_tensor_index auto to>
+        constexpr auto _gather_extents(nttp_args<to>) const -> array<int, to.size()>
+        {
+            constexpr auto map = to.gather_from(_inner);
+            array inner = ttl::extents(_a);
+            array<int, to.size()> out;
+            for (int i = 0; i < to.size(); ++i) {
+                out[i] = inner[map[i]];
+            }
+            return out;
         }
     };
 

@@ -2,6 +2,7 @@
 
 #include "array.hpp"
 #include "tensor_index.hpp"
+#include "utils.hpp"
 
 namespace ttl
 {
@@ -36,5 +37,17 @@ namespace ttl
 
     inline constexpr auto operator+(is_scalar_index auto&& a, is_scalar_index auto&& b) {
         return scalar_index(FWD(a), FWD(b));
+    }
+
+    template <int N>
+    inline constexpr auto carry_sum_add(is_scalar_index auto* index, is_array auto&& extents) -> bool
+    {
+        for (int i = N; i < index->size(); ++i) {
+            if (++(*index)[i] < extents[i]) {
+                return true;
+            }
+            (*index)[i] = 0;
+        }
+        return false;
     }
 }
