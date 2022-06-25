@@ -8,7 +8,7 @@ namespace ttl
 {
     template <class> struct bindable;
 
-    template <has_tensor_traits A, is_tensor_index auto _inner>
+    template <is_tensor A, is_tensor_index auto _inner>
     struct bind : bindable<bind<A, _inner>>
     {
         using scalar_type = scalar_type_t<A>;
@@ -31,6 +31,10 @@ namespace ttl
 
         static consteval auto get_order() -> int {
             return _order;
+        }
+
+        static consteval auto get_outer() -> tensor_index<_order> {
+            return _outer;
         }
 
         constexpr auto get_extents() const -> array<int, _order> {

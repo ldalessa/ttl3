@@ -1,8 +1,11 @@
 #include "array.hpp"
 #include "bindable.hpp"
+#include "operators.hpp"
 #include "scalar_index.hpp"
 #include "tensor_index.hpp"
 #include <vector>
+
+using namespace ttl::operators;
 
 static_assert(ttl::is_array<ttl::array<int, 10>>);
 static_assert(ttl::is_array<ttl::array<int, 0>>);
@@ -93,9 +96,17 @@ scalar s;
 
 matrix A(128,64);
 auto c = A(i,j);
-auto d = A(j,i);
 static_assert(ttl::has_member_tensor_traits<decltype(c)>);
+static_assert(ttl::has_member_expression_traits<decltype(c)>);
+
+auto d = A(j,i);
 static_assert(ttl::has_member_tensor_traits<decltype(d)>);
+static_assert(ttl::has_member_expression_traits<decltype(d)>);
+
+auto f = c + d;
+auto g = f - c;
+// static_assert(ttl::has_member_tensor_traits<decltype(c)>);
+// static_assert(ttl::has_member_tensor_traits<decltype(d)>);
 
 double e = A(i,~i);
 

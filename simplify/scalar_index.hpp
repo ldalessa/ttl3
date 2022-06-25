@@ -35,10 +35,6 @@ namespace ttl
     template <is_int_array A, is_int_array B>
     scalar_index(A, B) -> scalar_index<A::size() + B::size()>;
 
-    inline constexpr auto operator+(is_scalar_index auto&& a, is_scalar_index auto&& b) {
-        return scalar_index(FWD(a), FWD(b));
-    }
-
     template <int N>
     inline constexpr auto carry_sum_add(is_scalar_index auto* index, is_array auto&& extents) -> bool
     {

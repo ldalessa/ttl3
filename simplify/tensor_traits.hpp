@@ -25,7 +25,6 @@ namespace ttl
         };
     };
 
-
     template <has_tensor_traits T>
     using scalar_type_t = typename tensor_traits_t<T>::scalar_type;
 
@@ -81,4 +80,7 @@ namespace ttl
             return FWD(obj).evaluate(FWD(i));
         }
     };
+
+    template <class T>
+    concept is_tensor = has_tensor_traits<T>;
 }

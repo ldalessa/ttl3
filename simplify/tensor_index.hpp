@@ -11,6 +11,9 @@ namespace ttl
         typename std::remove_cvref_t<T>::is_tensor_index_tag;
     };
 
+    template <class T, int size>
+    concept is_tensor_index_of_size = is_tensor_index<T> and std::remove_cvref_t<T>::size() == size;
+
     struct _index {
         wchar_t c{-1};
         int t{PROJECTED};
