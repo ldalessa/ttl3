@@ -1,0 +1,134 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "clang",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": {
+                    "type": "STRING",
+                    "value": "clang++"
+                }
+            }
+        },
+        {
+            "name": "gcc",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": {
+                    "type": "STRING",
+                    "value": "g++"
+                }
+            }
+        },
+        {
+            "name": "release",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Release"
+                },
+                "CMAKE_CXX_FLAGS_RELEASE": {
+                    "type": "STRING",
+                    "value": "-O3"
+                },
+                "CMAKE_C_FLAGS_RELEASE": {
+                    "type": "STRING",
+                    "value": "-O3"
+                }
+            }
+        },
+        {
+            "name": "fastest",
+            "hidden": true,
+            "inherits": "release",
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": {
+                    "type": "STRING",
+                    "value": "-DNDEBUG -fno-math-errno"
+                },
+                "CMAKE_C_FLAGS": {
+                    "type": "STRING",
+                    "value": "-DNDEBUG -fno-math-errno"
+                }
+            }
+        },
+        {
+            "name": "og",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Debug"
+                },
+                "CMAKE_CXX_FLAGS": {
+                    "type": "STRING",
+                    "value": "-Og -fno-math-errno"
+                }
+            }
+        },
+        {
+            "name": "debug",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Debug"
+                },
+                "CMAKE_CXX_FLAGS": {
+                    "type": "STRING",
+                    "value": "-O0 -g"
+                }
+            }
+        },
+        {
+            "name": "gcc-release",
+            "description": "Production build enables -O3 with gcc and disables debugging",
+            "binaryDir": "${sourceDir}/build/gcc-release",
+            "inherits": [ "gcc", "release" ]
+        },
+        {
+            "name": "clang-release",
+            "description": "Production build enables -O3 with clang and disables debugging",
+            "binaryDir": "${sourceDir}/build/clang-release",
+            "inherits": [ "gcc", "release" ]
+        },
+        {
+            "name": "gcc-fastest",
+            "description": "Production build enables -O3 with gcc and disables debugging and verbose output",
+            "binaryDir": "${sourceDir}/build/gcc-fastest",
+            "inherits": [ "gcc", "fastest" ]
+        },
+        {
+            "name": "clang-fastest",
+            "description": "Production build enables -O3 with clang and disables debugging and verbose output",
+            "binaryDir": "${sourceDir}/build/clang-fastest",
+            "inherits": [ "clang", "fastest" ]
+        },
+        {
+            "name": "gcc-og",
+            "description": "Debug build enables -Og with gcc",
+            "binaryDir": "${sourceDir}/build/gcc-og",
+            "inherits": [ "gcc", "og" ]
+        },
+        {
+            "name": "clang-og",
+            "description": "Debug build enables -Og with clang",
+            "binaryDir": "${sourceDir}/build/clang-og",
+            "inherits": [ "clang", "og" ]
+        },
+        {
+            "name": "gcc-debug",
+            "description": "Full debug build with gcc",
+            "binaryDir": "${sourceDir}/build/gcc-debug",
+            "inherits": [ "gcc", "debug" ]
+        },
+        {
+            "name": "clang-debug",
+            "description": "Full debug build with clang",
+            "binaryDir": "${sourceDir}/build/clang-debug",
+            "inherits": [ "clang", "debug" ]
+        }
+    ]
+}
