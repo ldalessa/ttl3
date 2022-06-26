@@ -11,32 +11,24 @@ template <class T>
 constexpr bool concepts(type_args<T> = {})
 {
     using scalar = dynamic_tensor<T, 0>;
-    static_assert(ttl::concepts::scalar<scalar>);
-    static_assert(ttl::concepts::tensor<scalar>);
-    static_assert(ttl::concepts::expression<scalar>);
-    static_assert(ttl::concepts::has_static_extents<scalar>);
-    static_assert(ttl::concepts::has_static_outer<scalar>);
+    static_assert(ttl::is_scalar<scalar>);
+    static_assert(ttl::is_tensor<scalar>);
+    static_assert(ttl::is_expression<scalar>);
 
     using vector = dynamic_tensor<T, 1>;
-    static_assert(not ttl::concepts::scalar<vector>);
-    static_assert(ttl::concepts::tensor<vector>);
-    static_assert(not ttl::concepts::expression<vector>);
-    static_assert(not ttl::concepts::has_static_extents<vector>);
-    static_assert(not ttl::concepts::has_static_outer<vector>);
+    static_assert(not ttl::is_scalar<vector>);
+    static_assert(ttl::is_tensor<vector>);
+    static_assert(not ttl::is_expression<vector>);
 
     using matrix = dynamic_tensor<T, 2>;
-    static_assert(not ttl::concepts::scalar<matrix>);
-    static_assert(ttl::concepts::tensor<matrix>);
-    static_assert(not ttl::concepts::expression<matrix>);
-    static_assert(not ttl::concepts::has_static_extents<matrix>);
-    static_assert(not ttl::concepts::has_static_outer<matrix>);
+    static_assert(not ttl::is_scalar<matrix>);
+    static_assert(ttl::is_tensor<matrix>);
+    static_assert(not ttl::is_expression<matrix>);
 
     using tensor = dynamic_tensor<T, 4>;
-    static_assert(not ttl::concepts::scalar<tensor>);
-    static_assert(ttl::concepts::tensor<tensor>);
-    static_assert(not ttl::concepts::expression<tensor>);
-    static_assert(not ttl::concepts::has_static_extents<tensor>);
-    static_assert(not ttl::concepts::has_static_outer<tensor>);
+    static_assert(not ttl::is_scalar<tensor>);
+    static_assert(ttl::is_tensor<tensor>);
+    static_assert(not ttl::is_expression<tensor>);
 
     return true;
 }
