@@ -30,7 +30,7 @@ namespace ttl::tests
             return order();
         }
 
-        static consteval auto get_extents() -> decltype(auto) {
+        static constexpr auto get_extents() -> decltype(auto) {
             return _shape;
         }
 
