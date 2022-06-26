@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ttl/traits/extents.hpp"
 #include "md_base.hpp"
 #include <algorithm>
 #include <array>

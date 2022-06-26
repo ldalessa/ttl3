@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ttl/FWD.hpp"
-#include "ttl/concepts/shape.hpp"
 #include "md_base.hpp"
 #include <algorithm>                            // reverse
 #include <functional>                           // multiplies
@@ -11,7 +9,7 @@
 
 namespace ttl::tests
 {
-    template <class T, ttl::concepts::shape auto _shape>
+    template <class T, auto _shape>
     struct md_array : md_base<md_array<T, _shape>>
     {
         static constexpr auto _order = _shape.size();

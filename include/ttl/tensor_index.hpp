@@ -2,17 +2,18 @@
 
 #include "ttl/array.hpp"
 #include "ttl/index.hpp"
+#include "ttl/utils.hpp"
 #include <concepts>
 
 namespace ttl
 {
     template <class T>
-    concept is_tensor_index = requires {
+    concept is_tensor_index = has_static_size<T> and requires {
         typename std::remove_cvref_t<T>::is_tensor_index_tag;
     };
 
-    template <class T, int size>
-    concept is_tensor_index_of_size = is_tensor_index<T> and std::remove_cvref_t<T>::size() == size;
+    template <class T, int _size>
+    concept is_tensor_index_of_size = is_tensor_index<T> and size<T> == _size;
 
     struct _index {
         wchar_t c{-1};

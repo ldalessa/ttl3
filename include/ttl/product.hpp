@@ -52,7 +52,7 @@ namespace ttl
         constexpr auto _gather_extents(nttp_args<to>) const -> array<int, to.size()>
         {
             constexpr auto map = to.gather_from(_all);
-            array all = join(ttl::extents(_a), ttl::extents(_b));
+            auto&& all = join(ttl::extents(_a), ttl::extents(_b));
             array<int, to.size()> out;
             for (int i = 0; i < to.size(); ++i) {
                 out[i] = all[map[i]];

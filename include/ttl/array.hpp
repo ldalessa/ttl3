@@ -1,16 +1,12 @@
 #pragma once
 
+#include "ttl/utils.hpp"
 #include <concepts>
 #include <ranges>
 #include <type_traits>
 
 namespace ttl
 {
-    template <class T>
-    concept has_static_size = requires {
-        { std::remove_cvref_t<T>::size() } -> std::convertible_to<int>;
-    };
-
     template <class T>
     concept has_index_operator = (
             std::ranges::contiguous_range<std::remove_cvref_t<T>> and

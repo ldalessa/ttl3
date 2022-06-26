@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.23)
 project(ttl CXX)
 
-# include (FetchContent)
+include (FetchContent)
 
-# FetchContent_Declare(fmt
-#   GIT_REPOSITORY     https://github.com/fmtlib/fmt.git
-#   GIT_TAG            8.1.1)
-# FetchContent_MakeAvailable(fmt)
+FetchContent_Declare(fmt
+  GIT_REPOSITORY     https://github.com/fmtlib/fmt.git
+  GIT_TAG            8.1.1)
+FetchContent_MakeAvailable(fmt)
 
 # FetchContent_Declare(kumi
 #   GIT_REPOSITORY     https://github.com/jfalcou/kumi.git
@@ -21,6 +21,7 @@ project(ttl CXX)
 
 add_library(ttl_lib INTERFACE)
 target_include_directories(ttl_lib INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+target_link_libraries(ttl_lib INTERFACE fmt::fmt)
 # target_link_libraries(ttl_lib INTERFACE fmt::fmt kumi::kumi tag_invoke_wrapper::tag_invoke)
 target_compile_features(ttl_lib INTERFACE cxx_std_23)
 add_library(ttl::ttl ALIAS ttl_lib)
