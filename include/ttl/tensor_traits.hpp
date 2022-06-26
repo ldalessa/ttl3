@@ -83,4 +83,7 @@ namespace ttl
 
     template <class T>
     concept is_tensor = has_tensor_traits<T>;
+
+    template <class T>
+    concept is_scalar = is_tensor<T> and (order<T> == 0);
 }

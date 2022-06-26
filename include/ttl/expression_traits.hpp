@@ -33,6 +33,14 @@ namespace ttl
         }
     };
 
+    template <is_scalar T>
+    struct expression_traits<T>
+    {
+        static consteval auto get_outer() -> tensor_index<0> {
+            return tensor_index<0>{};
+        }
+    };
+
     template <class T>
     concept is_expression = has_expression_traits<T>;
 }
