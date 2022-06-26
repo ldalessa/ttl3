@@ -33,14 +33,6 @@ namespace ttl
         }
 
         template <is_tensor_index auto other>
-        constexpr typed_index(typed_index<other> const& b) requires (_type.is_prefix_of(other))
-        {
-            for (int i = 0; i < b.size(); ++i) {
-                _at(i) = b[i];
-            }
-        }
-
-        template <is_tensor_index auto other>
         constexpr auto operator+(typed_index<other> const& b) const -> typed_index<concat<_type, other>>
         {
             return typed_index<concat<_type, other>>(*this, b);
