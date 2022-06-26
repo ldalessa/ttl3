@@ -1,52 +1,49 @@
 #pragma once
 
-#include "ttl/concepts/index.hpp"
-#include <concepts>
+#include "ttl/array.hpp"
+#include "ttl/tensor_index.hpp"
+#include "ttl/utils.hpp"
 
 namespace ttl
 {
-    template <int M>
-    struct scalar_index
+    template <class T>
+    concept is_scalar_index = is_int_array<T>;
+
+    template <int _size>
+    struct scalar_index : array<int, _size>
     {
-        using scalar_index_concept_tag = void;
-
-        int _data[M];
-
         constexpr scalar_index() = default;
 
-        constexpr explicit scalar_index(concepts::index_or_integral auto... is)
-                : _data { _to_int(is)... }
+        constexpr scalar_index(is_index_or_int auto... is) requires (0 < sizeof...(is) and sizeof...(is) <= _size )
+            : array<int, _size> { ._data { to_int(is)... }}
         {
         }
 
-        template <int B>
-        constexpr explicit scalar_index(scalar_index<B> const& b) requires (B < M)
+        constexpr scalar_index(is_int_array auto&& a, is_int_array auto&& b)
         {
             int i = 0;
-            for (; i < B; ++i) _data[i] = b[i];
-            for (; i < M; ++i) _data[i] = 0;
-        }
-
-        static constexpr auto size() -> int {
-            return M;
-        }
-
-        constexpr auto operator[](int i) const -> int {
-            return _data[i];
-        }
-
-        constexpr auto operator[](int i) -> int& {
-            return _data[i];
-        }
-
-        static constexpr auto _to_int(concepts::index auto) -> int {
-            return -1;
-        }
-
-        static constexpr auto _to_int(std::convertible_to<int> auto i) -> int {
-            return i;
+            if constexpr (0 < _size) {
+                for (auto j : a) this->_data[i++] = j;
+                for (auto j : b) this->_data[i++] = j;
+            }
+            if (i != _size) throw "invalid scalar index construction";
         }
     };
 
-    scalar_index(concepts::index_or_integral auto... is) -> scalar_index<sizeof...(is)>;
+    scalar_index(std::convertible_to<int> auto... is) -> scalar_index<sizeof...(is)>;
+
+    template <is_int_array A, is_int_array B>
+    scalar_index(A, B) -> scalar_index<A::size() + B::size()>;
+
+    template <int N>
+    inline constexpr auto carry_sum_add(is_scalar_index auto* index, is_array auto&& extents) -> bool
+    {
+        for (int i = N; i < index->size(); ++i) {
+            if (++(*index)[i] < extents[i]) {
+                return true;
+            }
+            (*index)[i] = 0;
+        }
+        return false;
+    }
 }
