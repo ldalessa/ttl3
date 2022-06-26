@@ -56,11 +56,11 @@ namespace ttl
         constexpr bool operator==(tensor_index const&) const = default;
         constexpr auto operator<=>(tensor_index const&) const = default;
 
-        constexpr auto count(wchar_t c) const -> int
+        constexpr auto count(wchar_t c, int e = _size) const -> int
         {
             int n = 0;
-            for (auto [cʹ, _] : *this) {
-                n += (c == cʹ);
+            for (int i = 0; i < e; ++i) {
+                n += (c == (*this)[i].c);
             }
             return n;
         }
@@ -198,11 +198,13 @@ namespace ttl
     constexpr tensor_index contracted = [] {
         constexpr int size = a.n_contracted();
         tensor_index<size> out;
-        for (int i = 0; auto [c, t] : a) {
-            if (t != PROJECTED and a.count(c) == 2 and out.count(c) == 0) {
+        int i = 0;
+        for (auto [c, t] : a) {
+            if (t != PROJECTED and a.count(c) == 2 and out.count(c, i) == 0) {
                 out[i++] = _index(c, CONTRACTED);
             }
         }
+        if (i != size) throw "failed to properly contract an index";
         out.validate();
         return out;
     }();

@@ -29,6 +29,10 @@ namespace ttl
         {
         }
 
+        constexpr operator scalar_type() const requires (_order == 0) {
+            return evaluate(typed_index<_outer>{});
+        }
+
         static consteval auto get_order() -> int {
             return _order;
         }
@@ -39,10 +43,6 @@ namespace ttl
 
         constexpr auto get_extents() const -> array<int, _order> {
             return _gather_extents(nttp<_outer>);
-        }
-
-        constexpr operator scalar_type() const requires (_order == 0) {
-            return evaluate(typed_index<_outer>{});
         }
 
         constexpr auto evaluate(typed_index<_outer> const& outer) const -> decltype(auto)

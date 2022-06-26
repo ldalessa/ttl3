@@ -86,4 +86,14 @@ namespace ttl
 
     template <class T, std::convertible_to<T>... Ts>
     array(T, Ts...) -> array<T, sizeof...(Ts) + 1>;
+
+    template <class T, int A, int B>
+    constexpr auto join(array<T, A> const& a, array<T, B> const& b) -> array<T, A + B>
+    {
+        array<T, A + B> out;
+        int i = 0;
+        for (auto&& a : a) out[i++] = a;
+        for (auto&& b : b) out[i++] = b;
+        return out;
+    }
 }

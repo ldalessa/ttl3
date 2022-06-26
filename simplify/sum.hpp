@@ -2,6 +2,7 @@
 
 #include "expression_traits.hpp"
 #include "utils.hpp"
+#include <type_traits>
 
 namespace ttl
 {
@@ -38,8 +39,8 @@ namespace ttl
         B _b;
 
         constexpr sum(auto&& a, auto&& b, nttp_args<_op>)
-        : _a(std::forward<A>(a))
-            , _b(std::forward<B>(b))
+                : _a(std::forward<A>(a))
+                , _b(std::forward<B>(b))
         {
         }
 
@@ -56,7 +57,7 @@ namespace ttl
         }
 
         constexpr auto evaluate(typed_index<_outer_a> const& outer) const -> decltype(auto) {
-            return _op(ttl::evaluate(_a, outer), ttl::evaluate(_b, typed_index<_outer_b>(outer)));
+            return _op(ttl::evaluate(_a, outer), ttl::evaluate(_b, outer));
         }
     };
 

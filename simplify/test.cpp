@@ -21,6 +21,7 @@ static_assert(ttl::is_index_or_int<int>);
 
 ttl::index<'i'> i;
 ttl::index<'j'> j;
+ttl::index<'k'> k;
 namespace index_constructors
 {
     constexpr ttl::tensor_index x(i);
@@ -108,7 +109,11 @@ auto g = f - c;
 // static_assert(ttl::has_member_tensor_traits<decltype(c)>);
 // static_assert(ttl::has_member_tensor_traits<decltype(d)>);
 
-double e = A(i,~i);
+auto e = A(i,~j) * A(j,k);
+static_assert(ttl::has_member_tensor_traits<decltype(e)>);
+static_assert(ttl::has_member_expression_traits<decltype(e)>);
+static_assert(ttl::order<decltype(e)> == 2);
+
 
 // static_assert(std::remove_cvref_t<decltype(c)>::get_order() == 2);
 // static_assert(ttl::order<decltype(c)> == 2);
