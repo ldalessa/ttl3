@@ -23,21 +23,22 @@ namespace ttl
         { T::get_outer() } -> is_tensor_index_of_size<order<T>>;
     };
 
-    template <has_member_expression_traits T>
+    template <is_scalar T>
+    struct expression_traits<T>
+    {
+        static consteval auto get_outer() -> tensor_index<0> {
+            return tensor_index<0>{};
+        }
+    };
+
+    template <class T>
+    requires has_member_expression_traits<T> and (not is_scalar<T>)
     struct expression_traits<T>
     {
         static constexpr int test = true;
 
         static consteval auto get_outer() -> decltype(auto) {
             return T::get_outer();
-        }
-    };
-
-    template <is_scalar T>
-    struct expression_traits<T>
-    {
-        static consteval auto get_outer() -> tensor_index<0> {
-            return tensor_index<0>{};
         }
     };
 

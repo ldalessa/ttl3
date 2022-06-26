@@ -10,11 +10,9 @@ static_assert(ttl::is_expression<int>);
 static_assert(ttl::is_scalar<double>);
 static_assert(ttl::is_tensor<double>);
 static_assert(ttl::is_expression<double>);
-// static_assert(ttl::concepts::scalar<ttl::expressions::bind<int, ttl::tensor_index<0>{}>>);
-// static_assert(ttl::concepts::tensor<ttl::expressions::bind<int, ttl::tensor_index<0>{}>>);
-// static_assert(ttl::concepts::expression<ttl::expressions::bind<int, ttl::tensor_index<0>{}>>);
-// static_assert(ttl::concepts::has_static_extents<ttl::expressions::bind<int, ttl::tensor_index<0>{}>>);
-// static_assert(ttl::concepts::has_static_outer<ttl::expressions::bind<int, ttl::tensor_index<0>{}>>);
+static_assert(ttl::is_scalar<ttl::bind<int, ttl::tensor_index<0>{}>>);
+static_assert(ttl::is_tensor<ttl::bind<int, ttl::tensor_index<0>{}>>);
+static_assert(ttl::is_expression<ttl::bind<int, ttl::tensor_index<0>{}>>);
 
 using scalar = ttl::tests::static_tensor<double, std::array<int, 0>{}>;
 static_assert(ttl::is_tensor<scalar>);
