@@ -4,6 +4,10 @@
 #include <concepts>
 #include <ranges>
 
+#ifndef FWD
+#define FWD(x) static_cast<decltype(x)&&>(x)
+#endif
+
 namespace ttl::tests
 {
     template <class T, auto _shape>
@@ -38,6 +42,24 @@ namespace ttl::tests
         constexpr auto operator[](std::integral auto i) -> auto& {
             assert(0 <= i and i < _size);
             return _data[i];
+        }
+
+        constexpr auto operator()(std::ranges::random_access_range auto&& index) const -> auto& {
+            return _data[_shape.linearize(FWD(index))];
+        }
+
+        constexpr auto operator()(std::ranges::random_access_range auto&& index) -> auto& {
+            return _data[_shape.linearize(FWD(index))];
+        }
+
+        constexpr auto operator()(std::convertible_to<int> auto... is) const -> auto& {
+            static_assert(sizeof...(is) == _order);
+            return _data[_shape(is...)];
+        }
+
+        constexpr auto operator()(std::convertible_to<int> auto... is) -> auto& {
+            static_assert(sizeof...(is) == _order);
+            return _data[_shape(is...)];
         }
     };
 }

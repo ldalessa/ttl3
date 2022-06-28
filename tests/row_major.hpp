@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ttl/array.hpp"
-
+#include <array>
 #include <cassert>
 #include <concepts>
 #include <functional>
+#include <initializer_list>
 #include <numeric>
 #include <ranges>
 
@@ -13,8 +13,8 @@ namespace ttl::tests
     template <int _order, std::integral _size_t>
     struct row_major
     {
-        ttl::array<_size_t, _order> _extents;
-        ttl::array<_size_t, _order> _strides;
+        std::array<_size_t, _order> _extents;
+        std::array<_size_t, _order> _strides;
 
         constexpr row_major(std::convertible_to<_size_t> auto... extents)
                 : _extents{extents...}
@@ -57,10 +57,11 @@ namespace ttl::tests
             return _extents[i];
         }
 
-        constexpr auto linearize(std::ranges::random_access_range auto&& index) const -> _size_t {
+        constexpr auto linearize(std::ranges::input_range auto&& index) const -> _size_t {
             _size_t offset = 0;
+            auto in = std::ranges::begin(index);
             for (int i = 0; i < _order; ++i) {
-                offset += std::ranges::begin(index)[i] * _strides[i];
+                offset += *(in++) * _strides[i];
             }
             assert(offset < size());
             return offset;
@@ -68,7 +69,7 @@ namespace ttl::tests
 
         constexpr auto operator()(std::convertible_to<_size_t> auto... is) const -> _size_t {
             static_assert(sizeof...(is) == _order);
-            return linearize(ttl::array<_size_t, sizeof...(is)>{is...});
+            return linearize(std::initializer_list<int>{is...});
         }
     };
 

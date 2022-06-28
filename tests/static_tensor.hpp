@@ -35,13 +35,32 @@ namespace ttl::tests
             return _shape;
         }
 
-        // In the scalar index, the first
-        constexpr auto evaluate(ttl::scalar_index<_order> const& index) const -> auto& {
-            return _data[_shape.linearize(index)];
+        // constexpr auto evaluate(ttl::scalar_index<_order> const& index) const -> auto& {
+        //     return _data(index);
+        // }
+
+        // constexpr auto evaluate(ttl::scalar_index<_order> const& index) -> auto& {
+        //     return _data[_shape.linearize(index)];
+        // }
+
+        constexpr auto evaluate(ttl::scalar_index<_order> const& index) const -> decltype(auto) {
+            return _evaluate(*this, index);
         }
 
-        constexpr auto evaluate(ttl::scalar_index<_order> const& index) -> auto& {
-            return _data[_shape.linearize(index)];
+        constexpr auto evaluate(ttl::scalar_index<_order> const& index) -> decltype(auto) {
+            return _evaluate(*this, index);
+        }
+
+        static constexpr auto _evaluate(auto&& self, ttl::scalar_index<_order> const& index) -> decltype(auto)
+        {
+            return _evaluate(FWD(self), index, std::make_index_sequence<_order>{});
+        }
+
+        template <std::size_t... is>
+        static constexpr auto _evaluate(auto&& self, ttl::scalar_index<_order> const& index, std::index_sequence<is...>)
+            -> decltype(auto)
+        {
+            return FWD(self)._data(index[is]...);
         }
 
         constexpr auto operator[](std::integral auto i) const -> auto& {
