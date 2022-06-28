@@ -14,6 +14,9 @@ template <ttl::is_scalar T>
 constexpr bool scalar_tests(T&& t)
 {
     bool passed = true;
+    t() = 1;
+    passed &= TTL_CHECK( t[0] == 1 );
+    passed &= TTL_CHECK( t[0] == t() );
     return passed;
 }
 

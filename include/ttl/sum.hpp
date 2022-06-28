@@ -8,7 +8,8 @@ namespace ttl
 {
     template <class> struct bindable;
 
-    constexpr struct {
+    constexpr struct
+    {
         constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
             requires requires { FWD(a) + FWD(b); }
         {
@@ -16,7 +17,8 @@ namespace ttl
         }
     } plus{};
 
-    constexpr struct {
+    constexpr struct
+    {
         constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
             requires requires { FWD(a) - FWD(b); }
         {
@@ -25,7 +27,7 @@ namespace ttl
     } minus{};
 
     template <is_expression A, is_expression B, auto _op>
-    struct sum
+    struct sum : bindable<sum<A, B, _op>>
     {
         using scalar_type = std::common_type_t<scalar_type_t<A>, scalar_type_t<B>>;
 
@@ -44,11 +46,15 @@ namespace ttl
         {
         }
 
-        static consteval auto get_order() -> int {
+        constexpr operator scalar_type() const requires(_order == 0) {
+            return evaluate(typed_index<_outer_a>{});
+        }
+
+        static constexpr auto get_order() -> int {
             return _order;
         }
 
-        static consteval auto get_outer() -> tensor_index<_order> {
+        static constexpr auto get_outer() -> tensor_index<_order> {
             return _outer_a;
         }
 
@@ -62,5 +68,5 @@ namespace ttl
     };
 
     template <is_expression A, is_expression B, auto op>
-    sum(A, B, nttp_args<op>) -> sum<A, B, op>;
+    sum(A&&, B&&, nttp_args<op>) -> sum<A, B, op>;
 }
