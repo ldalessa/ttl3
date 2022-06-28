@@ -24,21 +24,28 @@ namespace ttl
         }
 
         template <is_tensor_index auto other>
-        constexpr typed_index(typed_index<other> const& b) requires (_type.is_subset_of(other))
+        constexpr typed_index(typed_index<other> const& b)
         {
-            constexpr array map = _type.gather_from(other);
-            for (int i = 0; i < _size; ++i) {
-                _at(i) = b[map[i]];
+            if constexpr (other.is_prefix_of(_type)) {
+                for (int i = 0; i < b.size(); ++i) {
+                    _at(i) = b[i];
+                }
+                for (int i = b.size(); i < _size; ++i) {
+                    _at(i) = 0;
+                }
             }
-        }
-
-        template <is_tensor_index auto other>
-        constexpr typed_index(typed_index<other> const& b) requires (not _type.is_subset_of(other) and other.is_subset_of(_type))
-        {
-            // constexpr array map = _type.gather_from(other);
-            // for (int i = 0; i < _size; ++i) {
-            //     _at(i) = b[map[i]];
-            // }
+            else if constexpr (_type.is_subset_of(other)) {
+                constexpr array map = _type.gather_from(other);
+                for (int i = 0; i < _size; ++i) {
+                    _at(i) = b[map[i]];
+                }
+            }
+            else {
+                constexpr array map = _type.gather_from(other);
+                for (int i = 0; i < _size; ++i) {
+                    _at(i) = (map[i] != b.size()) ? map[i] : 0;
+                }
+            }
         }
 
         template <is_tensor_index auto other>

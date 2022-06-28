@@ -138,9 +138,9 @@ namespace ttl
 
         ///
         constexpr auto gather_from(is_tensor_index auto&& b) const {
-            if (not is_subset_of(b)) {
-                throw "must gather from a subset";
-            }
+            // if (not is_subset_of(b)) {
+            //     throw "must gather from a subset";
+            // }
 
             array<int, _size> out;
             for (int i = 0, n = 1; auto [c, t] : *this) {

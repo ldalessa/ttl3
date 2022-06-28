@@ -10,25 +10,6 @@ ttl::index<'i'> i;
 ttl::index<'j'> j;
 ttl::index<'k'> k;
 
-// very hacky
-template <std::size_t A, std::size_t B>
-constexpr auto operator==(std::array<int, A> a, std::array<int, B> b) -> bool {
-    if (A != B) return false;
-    return std::equal(a.begin(), a.end(), b.begin());
-}
-
-template <std::size_t A, int B>
-constexpr auto operator==(std::array<int, A> a, ttl::array<int, B> b) -> bool {
-    if (A != B) return false;
-    return std::equal(a.begin(), a.end(), b.begin());
-}
-
-template <int A, std::size_t B>
-constexpr auto operator==(ttl::array<int, A> a, std::array<int, B> b) -> bool {
-    if (A != B) return false;
-    return std::equal(a.begin(), a.end(), b.begin());
-}
-
 template <ttl::is_scalar T>
 constexpr bool scalar_tests(T&& t)
 {
@@ -50,7 +31,7 @@ constexpr bool vector_tests(T&& t)
     auto bind = t(i);
     auto e1 = ttl::extents(bind);
 
-    passed &= TTL_CHECK( e0 == e1 );
+    passed &= TTL_CHECK( std::equal(e0.begin(), e0.end(), e1.begin(), e1.end()) );
 
     for (int i = 0; i < e0[0]; ++i) {
         passed &= TTL_CHECK( bind(i) == i);
@@ -83,7 +64,7 @@ constexpr bool matrix_tests(T&& t)
     auto bind = t(i,j);
     auto e1 = ttl::extents(bind);
 
-    passed &= TTL_CHECK( e0 == e1 );
+    passed &= TTL_CHECK( std::equal(e0.begin(), e0.end(), e1.begin(), e1.end()) );
 
     for (int i = 0; i < e0[0]; ++i) {
         for (int j = 0; j < e0[1]; ++j) {
