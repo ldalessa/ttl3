@@ -1,38 +1,69 @@
 #pragma once
 
-#include "md_base.hpp"
-#include <algorithm>
-#include <array>
-#include <numeric>
+#include "row_major.hpp"
+#include <cassert>
+#include <concepts>
+#include <ranges>
 #include <vector>
 
 namespace ttl::tests
 {
-    template <class T, int _order>
-    struct md_vector : md_base<md_vector<T, _order>>
+    template <class T, int _order, class Shape = row_major<_order, int>>
+    struct md_vector
     {
-        std::array<int, _order> _shape{};
-        std::array<int, _order> _strides{};
+        Shape _shape{};
         std::vector<T> _data{};
 
         constexpr md_vector() requires(_order != 0) = default;
 
-        constexpr explicit md_vector(std::integral auto... extents)
-            requires (sizeof...(extents) == _order)
-                : _shape { extents... }      // clang doesn't support ()
-                , _data((extents * ... * 1)) // {} means the wrong thing
+        constexpr explicit md_vector(std::convertible_to<int> auto... extents)
+                : _shape(extents...)
+                , _data(_shape.size())
         {
-            static_assert(sizeof...(extents) == _order);
-            std::exclusive_scan(_shape.begin(), _shape.end(), _strides.begin(), 1, std::multiplies{});
-            std::reverse(_strides.begin(), _strides.end());
         }
 
         static consteval auto order() -> int {
             return _order;
         }
 
-        constexpr auto size() const -> decltype(auto) {
+        constexpr auto size() const {
             return _data.size();
+        }
+
+        constexpr auto begin() const {
+            return std::ranges::begin(_data);
+        }
+
+        constexpr auto begin() {
+            return std::ranges::begin(_data);
+        }
+
+        constexpr auto end() const {
+            return std::ranges::begin(_data);
+        }
+
+        constexpr auto end() {
+            return std::ranges::end(_data);
+        }
+
+        constexpr auto operator[](int i) const -> auto& {
+            assert(0 <= i and i < size());
+            return _data[i];
+        }
+
+        constexpr auto operator[](int i) -> auto& {
+            assert(0 <= i and i < size());
+            return _data[i];
+        }
+
+        constexpr auto operator()(std::convertible_to<int> auto... is) const -> auto& {
+            static_assert(sizeof...(is) == _order);
+            return (*this)[_shape(is...)];
+        }
+
+        constexpr auto operator()(std::convertible_to<int> auto... is) -> auto& {
+            static_assert(sizeof...(is) == _order);
+            return (*this)[_shape(is...)];
         }
     };
 }

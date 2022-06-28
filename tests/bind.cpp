@@ -1,7 +1,8 @@
 #include "ttl/ttl.hpp"
 #include "common.hpp"
-#include "static_tensor.hpp"
 #include "dynamic_tensor.hpp"
+#include "static_tensor.hpp"
+#include "row_major.hpp"
 #include <algorithm>
 #include <array>
 
@@ -53,6 +54,14 @@ constexpr bool vector_tests(T&& t)
 
     for (int i = 0; i < e0[0]; ++i) {
         passed &= TTL_CHECK( bind(i) == i);
+    }
+
+    for (int i = 0; i < e0[0]; ++i) {
+        bind(i)++;
+    }
+
+    for (int i = 0; i < e0[0]; ++i) {
+        passed &= TTL_CHECK( bind(i) == i + 1);
     }
 
     return passed;
@@ -140,20 +149,20 @@ template <class T>
 constexpr bool static_tests()
 {
     bool passed = true;
-    ttl::tests::static_tensor<T, std::array<int, 0>{}> scalar;
+    ttl::tests::static_tensor<T, ttl::tests::row_major{}> scalar;
     passed &= scalar_tests(scalar);
 
-    ttl::tests::static_tensor<T, std::array{4}> vector;
+    ttl::tests::static_tensor<T, ttl::tests::row_major{4}> vector;
     passed &= vector_tests(vector);
 
-    // ttl::tests::static_tensor<T, std::array{4,3}> matrix43;
-    // passed &= matrix_tests(matrix43);
+    ttl::tests::static_tensor<T, ttl::tests::row_major{4,3}> matrix43;
+    passed &= matrix_tests(matrix43);
 
-    // ttl::tests::static_tensor<T, std::array{3,4}> matrix34;
-    // passed &= matrix_tests(matrix34);
+    ttl::tests::static_tensor<T, ttl::tests::row_major{3,4}> matrix34;
+    passed &= matrix_tests(matrix34);
 
-    // ttl::tests::static_tensor<T, std::array{4,4}> matrix44;
-    // passed &= matrix_tests(matrix44);
+    ttl::tests::static_tensor<T, ttl::tests::row_major{4,4}> matrix44;
+    passed &= matrix_tests(matrix44);
 
     return passed;
 }

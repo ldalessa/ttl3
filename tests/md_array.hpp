@@ -1,41 +1,43 @@
 #pragma once
 
-#include "md_base.hpp"
-#include <algorithm>                            // reverse
-#include <functional>                           // multiplies
-#include <numeric>                              // exclusive_scan
-#include <type_traits>                          // remove_const_t
-#include <utility>                              // index_sequence
+#include <cassert>
+#include <concepts>
+#include <ranges>
 
 namespace ttl::tests
 {
     template <class T, auto _shape>
-    struct md_array : md_base<md_array<T, _shape>>
+    struct md_array
     {
-        static constexpr auto _order = _shape.size();
-
-        static constexpr auto _size = []<std::size_t... i>(std::index_sequence<i...>) {
-            return (_shape[i] * ... * 1);
-        }(std::make_index_sequence<_order>{});
-
-        static constexpr auto _strides = [] {
-            using shape_t = std::remove_const_t<decltype(_shape)>;
-            shape_t strides{};
-            std::exclusive_scan(_shape.begin(), _shape.end(), strides.begin(), 1, std::multiplies{});
-            std::reverse(strides.begin(), strides.end());
-            return strides;
-        }();
+        static constexpr int _order = _shape.order();
+        static constexpr int _size = _shape.size();
 
         T _data[_size];
 
-        /// Total number of "dimensions" ("N-dimensional array" usage).
-        static consteval auto order() -> int {
+        static constexpr auto order() -> int {
             return _order;
         }
 
-        /// Total number of elements.
-        static consteval auto size() -> int {
+        static constexpr auto size() -> int {
             return _size;
+        }
+
+        constexpr auto begin() const -> decltype(auto) {
+            return std::ranges::begin(_data);
+        }
+
+        constexpr auto end() -> decltype(auto) {
+            return std::ranges::end(_data);
+        }
+
+        constexpr auto operator[](std::integral auto i) const -> auto& {
+            assert(0 <= i and i < _size);
+            return _data[i];
+        }
+
+        constexpr auto operator[](std::integral auto i) -> auto& {
+            assert(0 <= i and i < _size);
+            return _data[i];
         }
     };
 }

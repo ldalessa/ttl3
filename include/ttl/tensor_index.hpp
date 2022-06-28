@@ -66,11 +66,15 @@ namespace ttl
             return n;
         }
 
-        constexpr auto find(wchar_t c, int t, int n = 1) const -> int
+        constexpr auto _find(wchar_t c, int t, int n = 1) const -> int
         {
             for (int i = 0; auto [cʹ, tʹ] : *this) {
-                if (c == cʹ and t == tʹ and --n == 0) {
+                if (c == cʹ and --n == 0) {
+                // if (c == cʹ and ((t & tʹ) == t) and --n == 0) {
                     return i;
+                }
+                if ( n < 0) {
+                    return _size;
                 }
                 i += 1;
             }
@@ -106,12 +110,13 @@ namespace ttl
 
         constexpr auto is_subset_of(is_tensor_index auto&& b) const -> bool
         {
-            if (b.n_projected() < n_projected()) {
-                return false;
-            }
-
-            for (auto [c, t] : *this) {
-                if (find(c, t) == _size) {
+            for (int n = 1; auto [c, t] : *this) {
+                if (t == PROJECTED) {
+                    if (b._find(c, t, n++) == b.size()) {
+                        return false;
+                    }
+                }
+                else if (b._find(c, t) == b.size()) {
                     return false;
                 }
             }
@@ -131,17 +136,22 @@ namespace ttl
             return true;
         }
 
+        ///
         constexpr auto gather_from(is_tensor_index auto&& b) const {
             if (not is_subset_of(b)) {
                 throw "must gather from a subset";
             }
+
             array<int, _size> out;
-            for (int i = 0, n = 0; auto [c, t] : *this) {
+            for (int i = 0, n = 1; auto [c, t] : *this) {
                 if (t == PROJECTED) {
-                    out[i++] = b.find(c, t, ++n);
+                    out[i++] = b._find(c, t, n++);
                 }
+                // else if (t == CONTRACTED) {
+                //     throw "hmmm";
+                // }
                 else {
-                    out[i++] = b.find(c, t);
+                    out[i++] = b._find(c, t);
                 }
             }
             return out;

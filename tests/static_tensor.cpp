@@ -1,42 +1,41 @@
+#include "row_major.hpp"
 #include "static_tensor.hpp"
 #include "common.hpp"
 #include "ttl/ttl.hpp"
 #include <array>
 
-using ttl::tests::to_int_array;
 using ttl::tests::type_args;
 using ttl::tests::types;
 
 template <class T, std::integral auto... extents>
-requires ((extents >= 0) && ...)
-using tensor = ttl::tests::static_tensor<T, to_int_array(extents...)>;
+using tensor = ttl::tests::static_tensor<T, ttl::tests::row_major(extents...)>;
 
 template <class T>
 constexpr bool concepts(type_args<T> = {})
 {
     using scalar = tensor<T>;
-    static_assert(ttl::is_scalar<scalar>);
     static_assert(ttl::is_tensor<scalar>);
+    static_assert(ttl::is_scalar<scalar>);
     static_assert(ttl::is_expression<scalar>);
 
     using vector_1 = tensor<T, 1>;
-    static_assert(not ttl::is_scalar<vector_1>);
     static_assert(ttl::is_tensor<vector_1>);
+    static_assert(not ttl::is_scalar<vector_1>);
     static_assert(not ttl::is_expression<vector_1>);
 
     using vector_3 = tensor<T, 3>;
-    static_assert(not ttl::is_scalar<vector_3>);
     static_assert(ttl::is_tensor<vector_3>);
+    static_assert(not ttl::is_scalar<vector_3>);
     static_assert(not ttl::is_expression<vector_3>);
 
     using matrix_3_3 = tensor<T, 3, 3>;
-    static_assert(not ttl::is_scalar<matrix_3_3>);
     static_assert(ttl::is_tensor<matrix_3_3>);
+    static_assert(not ttl::is_scalar<matrix_3_3>);
     static_assert(not ttl::is_expression<matrix_3_3>);
 
     using tensor_4_4_4_4 = tensor<T, 4, 4, 4, 4>;
-    static_assert(not ttl::is_scalar<tensor_4_4_4_4>);
     static_assert(ttl::is_tensor<tensor_4_4_4_4>);
+    static_assert(not ttl::is_scalar<tensor_4_4_4_4>);
     static_assert(not ttl::is_expression<tensor_4_4_4_4>);
 
     return true;
@@ -92,7 +91,7 @@ constexpr bool linear_access(type_args<T> = {})
 }
 
 template <class T>
-constexpr bool aggregate_ctor(type_args<T>)
+constexpr bool variadic_ctor(type_args<T>)
 {
     bool passed = true;
 
@@ -375,7 +374,7 @@ constexpr bool tests()
     passed &= TTL_CHECK( concepts(types<T>)   );
     passed &= TTL_CHECK( default_ctor(types<T>)   );
     passed &= TTL_CHECK( linear_access(types<T>)   );
-    passed &= TTL_CHECK( aggregate_ctor(types<T>) );
+    passed &= TTL_CHECK( variadic_ctor(types<T>) );
     passed &= TTL_CHECK( copy_ctor(types<T>) );
     passed &= TTL_CHECK( move_ctor(types<T>) );
     passed &= TTL_CHECK( copy(types<T>) );

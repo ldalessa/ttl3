@@ -1,41 +1,36 @@
 #pragma once
 
-#include "ttl/utils.hpp"
+#include <algorithm>
 #include <concepts>
 #include <ranges>
 #include <type_traits>
 
 namespace ttl
 {
-    template <class T>
-    concept has_index_operator = (
-            std::ranges::contiguous_range<std::remove_cvref_t<T>> and
-            requires (T t, int i) {
-                { t[i] } -> std::convertible_to<std::ranges::range_value_t<std::remove_cvref_t<T>>>;
-            });
-
-    template <class T>
-    concept is_array = (
-            std::ranges::contiguous_range<std::remove_cvref_t<T>> and
-            std::ranges::sized_range<std::remove_cvref_t<T>> and
-            has_static_size<T> and
-            ((std::remove_cvref_t<T>::size() == 0) or has_index_operator<T>));
-
-    template <class T>
-    concept is_int_array = (
-            is_array<T> and
-            std::same_as<std::ranges::range_value_t<std::remove_cvref_t<T>>, int>);
-
     template <class T, int _size>
     struct array
     {
+        using value_type = T;
+
         T _data[_size];
 
         static constexpr auto size() -> int {
             return _size;
         }
 
+        constexpr auto operator==(array const& b) const -> bool {
+            return std::equal(begin(), end(), b.begin());
+        }
+
+        constexpr auto operator<=>(array const& b) const {
+            return std::lexicographical_compare_three_way(begin(), end(), b.begin(), b.end());
+        }
+
         constexpr auto begin() const {
+            return std::ranges::begin(_data);
+        }
+
+        constexpr auto begin() {
             return std::ranges::begin(_data);
         }
 
@@ -43,11 +38,31 @@ namespace ttl
             return std::ranges::end(_data);
         }
 
-        constexpr auto operator[](int i) const -> T const& {
+        constexpr auto end() {
+            return std::ranges::end(_data);
+        }
+
+        constexpr auto rbegin() const {
+            return std::ranges::rbegin(_data);
+        }
+
+        constexpr auto rbegin() {
+            return std::ranges::rbegin(_data);
+        }
+
+        constexpr auto rend() const {
+            return std::ranges::rend(_data);
+        }
+
+        constexpr auto rend() {
+            return std::ranges::rend(_data);
+        }
+
+        constexpr auto operator[](int i) const -> auto& {
             return _data[i];
         }
 
-        constexpr auto operator[](int i) -> T& {
+        constexpr auto operator[](int i) -> auto& {
             return _data[i];
         }
     };
@@ -55,15 +70,44 @@ namespace ttl
     template <class T>
     struct array<T, 0>
     {
+        using value_type = T;
+
         static constexpr auto size() -> int {
             return 0;
         }
+
+        constexpr auto operator== (array const&) const -> bool = default;
+        constexpr auto operator<=>(array const&) const -> auto = default;
 
         constexpr auto begin() const -> T const* {
             return nullptr;
         }
 
+        constexpr auto begin() -> T* {
+            return nullptr;
+        }
+
         constexpr auto end() const -> T const* {
+            return nullptr;
+        }
+
+        constexpr auto end() -> T* {
+            return nullptr;
+        }
+
+        constexpr auto rbegin() const -> T const* {
+            return nullptr;
+        }
+
+        constexpr auto rbegin() -> T* {
+            return nullptr;
+        }
+
+        constexpr auto rend() const -> T const* {
+            return nullptr;
+        }
+
+        constexpr auto rend() -> T* {
             return nullptr;
         }
 
@@ -80,8 +124,8 @@ namespace ttl
 
     array() -> array<int, 0>;
 
-    template <class T, std::convertible_to<T>... Ts>
-    array(T, Ts...) -> array<T, sizeof...(Ts) + 1>;
+    template <class T>
+    array(T, std::convertible_to<T> auto... ts) -> array<T, sizeof...(ts) + 1>;
 
     template <class T, int A, int B>
     constexpr auto join(array<T, A> const& a, array<T, B> const& b) -> array<T, A + B>
@@ -90,6 +134,7 @@ namespace ttl
         int i = 0;
         for (auto&& a : a) out[i++] = a;
         for (auto&& b : b) out[i++] = b;
+        if (i != A + B) throw "error joining arrays";
         return out;
     }
 }

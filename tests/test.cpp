@@ -1,5 +1,6 @@
 #include "ttl/ttl.hpp"
 #include "dynamic_tensor.hpp"
+#include "row_major.hpp"
 #include "static_tensor.hpp"
 #include <fmt/core.h>
 #include <fmt/ranges.h>
@@ -14,12 +15,12 @@ static_assert(ttl::is_scalar<ttl::bind<int, ttl::tensor_index<0>{}>>);
 static_assert(ttl::is_tensor<ttl::bind<int, ttl::tensor_index<0>{}>>);
 static_assert(ttl::is_expression<ttl::bind<int, ttl::tensor_index<0>{}>>);
 
-using scalar = ttl::tests::static_tensor<double, std::array<int, 0>{}>;
+using scalar = ttl::tests::static_tensor<double, ttl::tests::row_major{}>;
 static_assert(ttl::is_tensor<scalar>);
 static_assert(ttl::is_scalar<scalar>);
 static_assert(ttl::is_expression<scalar>);
 
-using vector3d = ttl::tests::static_tensor<double, std::array<int, 1>{3}>;
+using vector3d = ttl::tests::static_tensor<double, ttl::tests::row_major{3}>;
 static_assert(ttl::is_tensor<vector3d>);
 static_assert(not ttl::is_scalar<vector3d>);
 static_assert(not ttl::is_expression<vector3d>);
@@ -28,12 +29,6 @@ using matrixNd = ttl::tests::dynamic_tensor<double, 2>;
 static_assert(ttl::is_tensor<matrixNd>);
 static_assert(not ttl::is_scalar<matrixNd>);
 static_assert(not ttl::is_expression<matrixNd>);
-
-static_assert(ttl::is_int_array<std::array<int, 0>>);
-static_assert(ttl::is_int_array<std::array<int, 1>>);
-
-[[deprecated]]
-void print(auto) {}
 
 int main()
 {
@@ -47,7 +42,7 @@ int main()
     auto b = x(i);
     // constexpr auto c = ttl::extents(b);
 
-    matrixNd A(3, 3);
+    matrixNd A(3,3);
     A(0,0) = 0.0;
     A(0,1) = 0.1;
     A(0,2) = 0.2;

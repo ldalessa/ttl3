@@ -7,19 +7,19 @@
 namespace ttl
 {
     template <class T>
-    concept is_scalar_index = is_int_array<T>;
+    concept is_scalar_index = is_array_of<T, int>;
 
     template <int _size>
     struct scalar_index : array<int, _size>
     {
         constexpr scalar_index() = default;
 
-        constexpr scalar_index(is_index_or_int auto... is) requires (0 < sizeof...(is) and sizeof...(is) <= _size )
+        constexpr scalar_index(is_index_or_int auto... is) requires (0 < sizeof...(is) and sizeof...(is) <= _size)
             : array<int, _size> { ._data { to_int(is)... }}
         {
         }
 
-        constexpr scalar_index(is_int_array auto&& a, is_int_array auto&& b)
+        constexpr scalar_index(is_array_of<int> auto&& a, is_array_of<int> auto&& b)
         {
             int i = 0;
             if constexpr (0 < _size) {
@@ -32,7 +32,7 @@ namespace ttl
 
     scalar_index(std::convertible_to<int> auto... is) -> scalar_index<sizeof...(is)>;
 
-    template <is_int_array A, is_int_array B>
+    template <is_array_of<int> A, is_array_of<int> B>
     scalar_index(A, B) -> scalar_index<A::size() + B::size()>;
 
     template <int N>

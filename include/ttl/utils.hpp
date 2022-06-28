@@ -40,4 +40,11 @@ namespace ttl
             std::tuple_size<std::remove_cvref_t<T>>::value;
         }
     }();
+
+    template <class T>
+    concept is_array = std::ranges::contiguous_range<std::remove_cvref_t<T>>
+        and std::ranges::sized_range<std::remove_cvref_t<T>>;
+
+    template <class T, class U>
+    concept is_array_of = is_array<T> and std::same_as<std::ranges::range_value_t<std::remove_cvref_t<T>>, U>;
 }

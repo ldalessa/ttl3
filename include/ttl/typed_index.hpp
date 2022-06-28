@@ -33,6 +33,15 @@ namespace ttl
         }
 
         template <is_tensor_index auto other>
+        constexpr typed_index(typed_index<other> const& b) requires (not _type.is_subset_of(other) and other.is_subset_of(_type))
+        {
+            // constexpr array map = _type.gather_from(other);
+            // for (int i = 0; i < _size; ++i) {
+            //     _at(i) = b[map[i]];
+            // }
+        }
+
+        template <is_tensor_index auto other>
         constexpr auto operator+(typed_index<other> const& b) const -> typed_index<concat<_type, other>>
         {
             return typed_index<concat<_type, other>>(*this, b);
