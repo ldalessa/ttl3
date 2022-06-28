@@ -26,6 +26,10 @@ namespace ttl::tests
             return _order;
         }
 
+        constexpr auto shape() const -> Shape const& {
+            return _shape;
+        }
+
         constexpr auto size() const {
             return _data.size();
         }

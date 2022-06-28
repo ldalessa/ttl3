@@ -7,17 +7,17 @@
 namespace ttl::tests
 {
     template <class T, int _order>
-    struct dynamic_tensor : md_vector<T, _order>, ttl::bindable<dynamic_tensor<T, _order>>
+    struct dynamic_tensor : ttl::bindable<dynamic_tensor<T, _order>>
     {
         using scalar_type = T;
 
-        using ttl::bindable<dynamic_tensor<T, _order>>::operator();
+        md_vector<T, _order> _data{};
 
         constexpr dynamic_tensor() requires(_order != 0) = default;
 
         constexpr explicit dynamic_tensor(std::integral auto... extents)
             requires (sizeof...(extents) == _order)
-                : md_vector<T, _order> { extents... }
+                : _data { extents... }
         {
         }
 
@@ -26,29 +26,57 @@ namespace ttl::tests
         }
 
         constexpr auto get_extents() const -> decltype(auto) {
-            return this->_shape;
+            return _data.shape();
         }
 
-        /// Handle the ttl::cpos::evaluate CPO for const&,&&,& dynamic vectors.
-        ///
-        /// This could also be done in the raw tag_invoke calls above if we had
-        /// concept for dynamic tensors. The md_vector provides a variadic
-        /// operator(), so we just expand the index into a variadic form here.
-        ///
-        /// @param self  A forwarding reference formed from the this pointer.
-        /// @param index The index to evalute.
-        constexpr auto evaluate(ttl::scalar_index<_order> const& index) const -> decltype(auto)
-        {
-            return [&]<std::size_t... is>(md_vector<T, _order> const& self, std::index_sequence<is...>) -> decltype(auto) {
-                return self(index[is]...);
-            }(*this, std::make_index_sequence<_order>{});
+        constexpr auto size() const {
+            return _data.size();
         }
 
-        constexpr auto evaluate(ttl::scalar_index<_order> const& index) -> decltype(auto)
+        constexpr auto begin() const {
+            return std::ranges::begin(_data);
+        }
+
+        constexpr auto begin() {
+            return std::ranges::begin(_data);
+        }
+
+        constexpr auto end() const {
+            return std::ranges::begin(_data);
+        }
+
+        constexpr auto end() {
+            return std::ranges::end(_data);
+        }
+
+        constexpr auto operator[](int i) const -> auto& {
+            assert(0 <= i and i < size());
+            return _data[i];
+        }
+
+        constexpr auto operator[](int i) -> auto& {
+            assert(0 <= i and i < size());
+            return _data[i];
+        }
+
+        constexpr auto evaluate(ttl::scalar_index<_order> const& index) const -> decltype(auto) {
+            return _evaluate(*this, index);
+        }
+
+        constexpr auto evaluate(ttl::scalar_index<_order> const& index) -> decltype(auto) {
+            return _evaluate(*this, index);
+        }
+
+        static constexpr auto _evaluate(auto&& self, ttl::scalar_index<_order> const& index) -> decltype(auto)
         {
-            return [&]<std::size_t... is>(md_vector<T, _order>& self, std::index_sequence<is...>) -> decltype(auto) {
-                return self(index[is]...);
-            }(*this, std::make_index_sequence<_order>{});
+            return _evaluate(FWD(self), index, std::make_index_sequence<_order>{});
+        }
+
+        template <std::size_t... is>
+        static constexpr auto _evaluate(auto&& self, ttl::scalar_index<_order> const& index, std::index_sequence<is...>)
+            -> decltype(auto)
+        {
+            return FWD(self)._data(index[is]...);
         }
     };
 }

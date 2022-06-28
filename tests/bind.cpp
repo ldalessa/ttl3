@@ -158,22 +158,25 @@ constexpr bool dynamic_tests()
     ttl::tests::dynamic_tensor<T, 1> vector(128);
     passed &= vector_tests(vector);
 
-    ttl::tests::dynamic_tensor<T, 2> matrix_128_16(128, 16);
-    passed &= matrix_tests(matrix_128_16);
+    ttl::tests::dynamic_tensor<T, 2> matrix_16_16(16, 16);
+    passed &= matrix_tests(matrix_16_16);
 
-    ttl::tests::dynamic_tensor<T, 2> matrix_16_128(16, 128);
-    passed &= matrix_tests(matrix_16_128);
+    ttl::tests::dynamic_tensor<T, 2> matrix_16_11(16, 11);
+    passed &= matrix_tests(matrix_16_11);
 
-    ttl::tests::dynamic_tensor<T, 2> matrix_128_128(128, 128);
-    passed &= matrix_tests(matrix_128_128);
+    ttl::tests::dynamic_tensor<T, 2> matrix_11_16(11, 16);
+    passed &= matrix_tests(matrix_11_16);
 
     return passed;
 }
 
 int main()
 {
-    //constexpr
-    bool a = static_tests<double>(); if (!a) throw;
-    // constexpr bool b = dynamic_tests<double>(); if (!b) throw;
+    constexpr bool a = static_tests<double>(); if (!a) throw;
+#ifdef __clang__
+    bool b = dynamic_tests<double>(); if (!b) throw;
+#else
+    constexpr bool b = dynamic_tests<double>(); if (!b) throw;
+#endif
 }
 
