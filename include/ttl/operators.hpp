@@ -14,10 +14,6 @@ namespace ttl
     {
         using scalar_type = T;
 
-        static consteval auto get_order() -> int {
-            return 0;
-        }
-
         static constexpr auto get_extents(T) -> array<int, 0> {
             return {};
         }

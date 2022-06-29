@@ -31,15 +31,9 @@ namespace ttl
         };
 
         template <class T>
-        concept _has_tensor_traits_get_order = _has_tensor_traits_specialization<T> and requires {
-            { tensor_traits_t<T>::get_order() } -> std::convertible_to<int>;
-        };
-
-        template <class T>
         concept _has_tensor_traits_get_extents = _has_tensor_traits_specialization<T>
-            and _has_tensor_traits_get_order<T>
             and requires (T t) {
-                { tensor_traits_t<T>::get_extents(t) } -> is_extents_of_order<tensor_traits_t<T>::get_order()>;
+                { tensor_traits_t<T>::get_extents(t) } -> is_extents;
             };
 
         template <class T>
@@ -53,7 +47,6 @@ namespace ttl
 
     template <class T>
     concept is_tensor = _detail::_has_tensor_traits_scalar_type<T>
-        and _detail::_has_tensor_traits_get_order<T>
         and _detail::_has_tensor_traits_get_extents<T>
         and _detail::_has_tensor_traits_evaluate<T>;
 
@@ -101,13 +94,8 @@ namespace ttl
         };
 
         template <class T>
-        concept _has_member_get_order = requires {
-            { std::remove_cvref_t<T>::get_order() } -> std::convertible_to<int>;
-        };
-
-        template <class T>
-        concept _has_member_get_extents = _has_member_get_order<T> and requires (T t) {
-            { t.get_extents() } -> is_extents_of_order<std::remove_cvref_t<T>::get_order()>;
+        concept _has_member_get_extents = requires (T t) {
+            { t.get_extents() } -> is_extents;
         };
 
         template <class T>
@@ -119,7 +107,6 @@ namespace ttl
 
         template <class T>
         concept _has_member_tensor_traits = _has_member_scalar_type<T>
-            and _has_member_get_order<T>
             and _has_member_get_extents<T>
             and _has_member_evaluate<T>;
     }
@@ -128,10 +115,6 @@ namespace ttl
     struct tensor_traits<T>
     {
         using scalar_type = typename std::remove_cvref_t<T>::scalar_type;
-
-        static consteval auto get_order() -> int {
-            return std::remove_cvref_t<T>::get_order();
-        }
 
         static constexpr auto get_extents(auto&& obj) -> decltype(auto) {
             return FWD(obj).get_extents();

@@ -21,10 +21,6 @@ namespace ttl::tests
         {
         }
 
-        static consteval auto get_order() -> int {
-            return _order;
-        }
-
         constexpr auto get_extents() const -> decltype(auto) {
             return _data.shape();
         }

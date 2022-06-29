@@ -22,10 +22,6 @@ namespace ttl::tests
         {
         }
 
-        static consteval auto order() -> int {
-            return _order;
-        }
-
         constexpr auto shape() const -> Shape const& {
             return _shape;
         }

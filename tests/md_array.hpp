@@ -18,10 +18,6 @@ namespace ttl::tests
 
         T _data[_size];
 
-        static constexpr auto order() -> int {
-            return _order;
-        }
-
         static constexpr auto size() -> int {
             return _size;
         }

@@ -50,10 +50,6 @@ namespace ttl
             return evaluate(typed_index<_outer_a>{});
         }
 
-        static constexpr auto get_order() -> int {
-            return _order;
-        }
-
         static constexpr auto get_outer() -> tensor_index<_order> {
             return _outer_a;
         }

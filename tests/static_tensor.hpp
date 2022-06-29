@@ -27,21 +27,9 @@ namespace ttl::tests
         {
         }
 
-        static consteval auto get_order() -> int {
-            return _order;
-        }
-
         static constexpr auto get_extents() -> extents_type const& {
             return _shape;
         }
-
-        // constexpr auto evaluate(ttl::scalar_index<_order> const& index) const -> auto& {
-        //     return _data(index);
-        // }
-
-        // constexpr auto evaluate(ttl::scalar_index<_order> const& index) -> auto& {
-        //     return _data[_shape.linearize(index)];
-        // }
 
         constexpr auto evaluate(ttl::scalar_index<_order> const& index) const -> decltype(auto) {
             return _evaluate(*this, index);
