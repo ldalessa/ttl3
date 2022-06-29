@@ -12,6 +12,12 @@ namespace ttl
     template <class T>
     using tensor_traits_t = tensor_traits<std::remove_cvref_t<T>>;
 
+    template <class T>
+    concept is_extents = is_array_of<T, int> and has_static_size<T>;
+
+    template <class T, int N>
+    concept is_extents_of_order = is_extents<T> and size<T> == N;
+
     namespace _detail
     {
         template <class T>
@@ -30,9 +36,11 @@ namespace ttl
         };
 
         template <class T>
-        concept _has_tensor_traits_get_extents = _has_tensor_traits_specialization<T> and requires (T t) {
-            { tensor_traits_t<T>::get_extents(t) } -> is_array_of<int>;
-        };
+        concept _has_tensor_traits_get_extents = _has_tensor_traits_specialization<T>
+            and _has_tensor_traits_get_order<T>
+            and requires (T t) {
+                { tensor_traits_t<T>::get_extents(t) } -> is_extents_of_order<tensor_traits_t<T>::get_order()>;
+            };
 
         template <class T>
         concept _has_tensor_traits_evaluate = _has_tensor_traits_specialization<T>
@@ -98,8 +106,8 @@ namespace ttl
         };
 
         template <class T>
-        concept _has_member_get_extents = requires (T t) {
-            { t.get_extents() } -> is_array_of<int>;
+        concept _has_member_get_extents = _has_member_get_order<T> and requires (T t) {
+            { t.get_extents() } -> is_extents_of_order<std::remove_cvref_t<T>::get_order()>;
         };
 
         template <class T>

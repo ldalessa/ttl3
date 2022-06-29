@@ -13,8 +13,8 @@ namespace ttl::tests
     template <class T, auto _shape>
     struct md_array
     {
-        static constexpr int _order = _shape.order();
-        static constexpr int _size = _shape.size();
+        static constexpr int _order = _shape.size();
+        static constexpr int _size = _shape.count();
 
         T _data[_size];
 

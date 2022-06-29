@@ -16,8 +16,8 @@ namespace ttl::tests
         using scalar_type = T;
         using extents_type = decltype(_shape);
 
-        static constexpr auto _order = _shape.order();
-        static constexpr auto _size = _shape.size();
+        static constexpr auto _order = _shape.size();
+        static constexpr auto _size = _shape.count();
 
         md_array<T, _shape> _data;
 

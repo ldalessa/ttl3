@@ -193,25 +193,25 @@ constexpr bool dynamic_tensor_tests()
 
     {
         using vector = dynamic_tensor<T, 1>;
-        vector x(64), y(64);
+        vector x(8), y(8);
         passed &= TTL_CHECK( vector_tests(x, y) );
     }
 
     {
         using matrix = dynamic_tensor<T, 2>;
-        matrix x(16,16), y(16,16);
+        matrix x(8,8), y(8,8);
         passed &= TTL_CHECK( matrix_tests(x, y) );
     }
 
     {
         using matrix = dynamic_tensor<T, 2>;
-        matrix x(12,8), y(12,8);
+        matrix x(5,8), y(5,8);
         passed &= TTL_CHECK( matrix_tests(x, y) );
     }
 
     {
         using matrix = dynamic_tensor<T, 2>;
-        matrix x(8,12), y(8,12);
+        matrix x(8,5), y(8,5);
         passed &= TTL_CHECK( matrix_tests(x, y) );
     }
 
@@ -231,29 +231,29 @@ constexpr bool mixed_tensor_tests()
     }
 
     {
-        static_tensor<T, row_major{16}> x;
-        dynamic_tensor<T, 1> y(16);
+        static_tensor<T, row_major{8}> x;
+        dynamic_tensor<T, 1> y(8);
         passed &= TTL_CHECK( vector_tests(x, y) );
         passed &= TTL_CHECK( vector_tests(y, x) );
     }
 
     {
-        static_tensor<T, row_major{16,16}> x;
-        dynamic_tensor<T, 2> y(16,16);
+        static_tensor<T, row_major{8,8}> x;
+        dynamic_tensor<T, 2> y(8,8);
         passed &= TTL_CHECK( matrix_tests(x, y) );
         passed &= TTL_CHECK( matrix_tests(y, x) );
     }
 
     {
-        static_tensor<T, row_major{12,8}> x;
-        dynamic_tensor<T, 2> y(12,8);
+        static_tensor<T, row_major{4,8}> x;
+        dynamic_tensor<T, 2> y(4,8);
         passed &= TTL_CHECK( matrix_tests(x, y) );
         passed &= TTL_CHECK( matrix_tests(y, x) );
     }
 
     {
-        static_tensor<T, row_major{7,8}> x;
-        dynamic_tensor<T, 2> y(7,8);
+        static_tensor<T, row_major{8,7}> x;
+        dynamic_tensor<T, 2> y(8,7);
         passed &= TTL_CHECK( matrix_tests(x, y) );
         passed &= TTL_CHECK( matrix_tests(y, x) );
     }

@@ -19,18 +19,25 @@ namespace ttl::tests
         constexpr row_major(std::convertible_to<_size_t> auto... extents)
                 : _extents{extents...}
         {
-            // note the rbegin/rends, this is because the first extent, which
-            // should be _extents[0], should be the outermost extent during
-            // "linearize".
-            std::exclusive_scan(_extents.rbegin(), _extents.rend(), _strides.rbegin(), _size_t{1}, std::multiplies{});
+            // reverse iterators because extents are stored as big endian
+            std::exclusive_scan(
+                    _extents.rbegin(),
+                    _extents.rend(),
+                    _strides.rbegin(),
+                    _size_t{1},
+                    std::multiplies{});
         }
 
-        constexpr auto order() const -> int {
+        static constexpr auto size() -> int {
             return _order;
         }
 
-        constexpr auto size() const -> _size_t {
-            return std::accumulate(_extents.begin(), _extents.end(), _size_t{1}, std::multiplies{});
+        constexpr auto count() const -> _size_t {
+            return std::accumulate(
+                    _extents.begin(),
+                    _extents.end(),
+                    _size_t{1},
+                    std::multiplies{});
         }
 
         constexpr auto begin() const -> decltype(auto) {
@@ -63,7 +70,7 @@ namespace ttl::tests
             for (int i = 0; i < _order; ++i) {
                 offset += *(in++) * _strides[i];
             }
-            assert(offset < size());
+            assert(offset < count());
             return offset;
         }
 

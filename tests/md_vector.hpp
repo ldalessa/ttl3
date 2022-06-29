@@ -18,7 +18,7 @@ namespace ttl::tests
 
         constexpr explicit md_vector(std::convertible_to<int> auto... extents)
                 : _shape(extents...)
-                , _data(_shape.size())
+                , _data(_shape.count())
         {
         }
 

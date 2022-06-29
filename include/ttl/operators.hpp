@@ -48,10 +48,7 @@ namespace ttl
         template <is_expression A, is_expression B>
         inline constexpr auto operator*(A&& a, B&& b)
         {
-            return product {
-                ._a = FWD(a),
-                ._b = FWD(b)
-            };
+            return product<A, B>(FWD(a), FWD(b));
         }
     }
 }
