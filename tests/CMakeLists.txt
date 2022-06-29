@@ -16,5 +16,5 @@ target_link_libraries(sum PRIVATE ttl_lib)
 add_executable(product product.cpp)
 target_link_libraries(product PRIVATE ttl_lib)
 
-# add_executable(expressions expressions.cpp)
-# target_link_libraries(expressions PRIVATE ttl_lib)
+add_executable(expressions expressions.cpp)
+target_link_libraries(expressions PRIVATE ttl_lib)
