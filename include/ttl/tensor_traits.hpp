@@ -28,7 +28,7 @@ namespace ttl
         template <class T>
         concept _has_tensor_traits_scalar_type = _has_tensor_traits_specialization<T> and requires {
             typename tensor_traits_t<T>::scalar_type;
-        };;
+        };
 
         template <class T>
         concept _has_tensor_traits_get_order = _has_tensor_traits_specialization<T> and requires {
@@ -45,8 +45,8 @@ namespace ttl
         template <class T>
         concept _has_tensor_traits_evaluate = _has_tensor_traits_specialization<T>
             and _has_tensor_traits_scalar_type<T>
-            and _has_tensor_traits_get_order<T>
-            and requires (T t, scalar_index<tensor_traits_t<T>::get_order()> const& i) {
+            and _has_tensor_traits_get_extents<T>
+            and requires (T t, scalar_index<size<decltype(tensor_traits_t<T>::get_extents(t))>> const& i) {
                 { tensor_traits_t<T>::evaluate(t, i) } -> std::convertible_to<typename tensor_traits_t<T>::scalar_type>;
             };
     };
@@ -60,8 +60,8 @@ namespace ttl
     template <_detail::_has_tensor_traits_scalar_type T>
     using scalar_type_t = typename tensor_traits_t<T>::scalar_type;
 
-    template <_detail::_has_tensor_traits_get_order T>
-    constexpr int order = tensor_traits_t<T>::get_order();
+    template <_detail::_has_tensor_traits_get_extents T>
+    constexpr int order = size<decltype(tensor_traits_t<T>::get_extents(std::declval<T>()))>;
 
     namespace _detail
     {
@@ -111,9 +111,9 @@ namespace ttl
         };
 
         template <class T>
-        concept _has_member_evaluate = _has_member_get_order<T>
-            and _has_member_scalar_type<T>
-            and requires (T t, scalar_index<std::remove_cvref_t<T>::get_order()> const& i) {
+        concept _has_member_evaluate = _has_member_scalar_type<T>
+            and _has_member_get_extents<T>
+            and requires (T t, scalar_index<size<decltype(t.get_extents())>> const& i) {
                 { t.evaluate(i) } -> std::convertible_to<typename std::remove_cvref_t<T>::scalar_type>;
             };
 
