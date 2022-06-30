@@ -2,6 +2,7 @@
 
 #include "ttl/ttl.hpp"
 #include "md_vector.hpp"
+#include "row_major.hpp"
 #include <concepts>
 
 namespace ttl::tests
@@ -11,7 +12,7 @@ namespace ttl::tests
     {
         using scalar_type = T;
 
-        md_vector<T, _order> _data{};
+        md_vector<T, _order, row_major<_order, int>> _data{};
 
         constexpr dynamic_tensor() requires(_order != 0) = default;
 
@@ -19,6 +20,11 @@ namespace ttl::tests
             requires (sizeof...(extents) == _order)
                 : _data { extents... }
         {
+        }
+
+        constexpr dynamic_tensor(ttl::is_expression_of_order<_order> auto&& rhs) {
+            _data.reshape(ttl::extents(rhs));
+            ttl::assign(*this, FWD(rhs));
         }
 
         constexpr auto get_extents() const -> decltype(auto) {
@@ -63,8 +69,7 @@ namespace ttl::tests
             return _evaluate(*this, index);
         }
 
-        static constexpr auto _evaluate(auto&& self, ttl::scalar_index<_order> const& index) -> decltype(auto)
-        {
+        static constexpr auto _evaluate(auto&& self, ttl::scalar_index<_order> const& index) -> decltype(auto) {
             return _evaluate(FWD(self), index, std::make_index_sequence<_order>{});
         }
 

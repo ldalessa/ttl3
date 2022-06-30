@@ -26,7 +26,12 @@ namespace ttl
     }
 
     template <class T>
-    concept is_expression = is_tensor<T> and _detail::_has_expression_traits_get_outer<T>;
+    concept is_expression = is_tensor<T>
+        and _detail::_has_expression_traits_get_outer<T>;
+
+    template <class T, int order>
+    concept is_expression_of_order = is_expression<T>
+        and is_tensor_of_order<T, order>;
 
     template <_detail::_has_expression_traits_get_outer T>
     constexpr tensor_index outer = expression_traits_t<T>::get_outer();

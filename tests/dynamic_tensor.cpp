@@ -1,5 +1,5 @@
-#include "dynamic_tensor.hpp"
 #include "common.hpp"
+#include "dynamic_tensor.hpp"
 #include "ttl/ttl.hpp"
 #include <array>
 

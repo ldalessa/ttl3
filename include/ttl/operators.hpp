@@ -57,7 +57,7 @@ namespace ttl
             }
         } plus{};
 
-        constexpr struct
+        constexpr struct minus_fn
         {
             constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
             {

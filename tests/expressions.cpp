@@ -6,21 +6,53 @@
 
 using namespace ttl::tests;
 
-template <ttl::is_tensor X>
-constexpr auto accumulate(X x) -> bool
+template <ttl::is_tensor T>
+constexpr auto assign(T x) -> bool
 {
     bool passed = true;
 
     ttl::is_extents auto e = ttl::extents(x);
-    ttl::is_tensor auto y = x;
+    T y;
 
-    if constexpr (ttl::is_scalar<X>) {
+    if constexpr (ttl::is_scalar<T>) {
+        y = x;
+        passed &= TTL_CHECK( x == y );
+    }
+    else if constexpr (ttl::is_tensor_of_order<T, 1>) {
+        ttl::index<'i'> i;
+        y = x(i);
+        for (int i = 0; i < e[0]; ++i) {
+            passed &= TTL_CHECK( x(i) == y(i) );
+        }
+    }
+    else if constexpr (ttl::is_tensor_of_order<T, 2>) {
+        ttl::index<'i'> i;
+        ttl::index<'j'> j;
+        y = x(i,j);
+        for (int i = 0; i < e[0]; ++i) {
+            for (int j = 0; j < e[1]; ++j) {
+                passed &= TTL_CHECK( x(i,j) == y(i,j) );
+            }
+        }
+    }
+    return passed;
+}
+
+template <ttl::is_tensor T>
+constexpr auto accumulate(T x) -> bool
+{
+    bool passed = true;
+
+    ttl::is_extents auto e = ttl::extents(x);
+    T y = x;
+
+    if constexpr (ttl::is_scalar<T>) {
         x += x;
         passed &= TTL_CHECK( x == 2 * y );
         x -= y;
         passed &= TTL_CHECK( x == y );
     }
-    else if constexpr (ttl::is_tensor_of_order<X, 1>) {
+    else if constexpr (ttl::is_tensor_of_order<T, 1>) {
         ttl::index<'i'> i;
         x(i) += x(i);
         for (int i = 0; i < e[0]; ++i) {
@@ -32,7 +64,7 @@ constexpr auto accumulate(X x) -> bool
             passed &= TTL_CHECK( x(i) == y(i) );
         }
     }
-    else if constexpr (ttl::is_tensor_of_order<X, 2>) {
+    else if constexpr (ttl::is_tensor_of_order<T, 2>) {
         ttl::index<'i'> i;
         ttl::index<'j'> j;
 
@@ -109,9 +141,11 @@ constexpr auto static_tensor_tests() -> bool
     };
 
     passed &= Axpy(A, x, y);
+    passed &= assign(A);
+    passed &= assign(x);
+
     passed &= accumulate(A);
     passed &= accumulate(x);
-    passed &= accumulate(y);
 
     return passed;
 }
@@ -147,9 +181,13 @@ constexpr auto dynamic_tensor_tests() -> bool
     y(2) = 3;
 
     passed &= Axpy(A, x, y);
+
+    passed &= assign(A);
+    passed &= assign(x);
+
     passed &= accumulate(A);
     passed &= accumulate(x);
-    passed &= accumulate(y);
+
     return passed;
 }
 

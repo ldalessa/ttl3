@@ -1,14 +1,14 @@
 #pragma once
 
-#include "row_major.hpp"
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <utility>
 #include <vector>
 
 namespace ttl::tests
 {
-    template <class T, int _order, class Shape = row_major<_order, int>>
+    template <class T, int _order, class Shape>
     struct md_vector
     {
         Shape _shape{};
@@ -20,10 +20,33 @@ namespace ttl::tests
                 : _shape(extents...)
                 , _data(_shape.count())
         {
+            static_assert(sizeof...(extents) == _order);
+        }
+
+        template < std::size_t... i>
+        constexpr explicit md_vector(std::ranges::sized_range auto&& shape, std::index_sequence<i...>)
+                : md_vector(shape[i]...)
+        {
+            assert(std::ranges::size(shape) == _order);
+        }
+
+        constexpr explicit md_vector(std::ranges::sized_range auto&& shape)
+                : md_vector(FWD(shape), std::make_index_sequence<_order>{})
+        {
+            assert(std::ranges::size(shape) == _order);
         }
 
         constexpr auto shape() const -> Shape const& {
             return _shape;
+        }
+
+        constexpr auto reshape(std::ranges::sized_range auto&& shape) -> auto& {
+            assert(std::ranges::size(shape) == _order);
+            [&]<std::size_t... i>(std::index_sequence<i...>) {
+                _shape = Shape(std::ranges::begin(shape)[i]...);
+            }(std::make_index_sequence<_order>{});
+            _data.resize(_shape.count());
+            return *this;
         }
 
         constexpr auto size() const {

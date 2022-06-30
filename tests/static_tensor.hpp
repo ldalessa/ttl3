@@ -27,6 +27,10 @@ namespace ttl::tests
         {
         }
 
+        constexpr static_tensor(ttl::is_expression_of_order<_order> auto&& rhs) {
+            ttl::assign(*this, FWD(rhs));
+        }
+
         static constexpr auto get_extents() -> extents_type const& {
             return _shape;
         }
@@ -39,8 +43,7 @@ namespace ttl::tests
             return _evaluate(*this, index);
         }
 
-        static constexpr auto _evaluate(auto&& self, ttl::scalar_index<_order> const& index) -> decltype(auto)
-        {
+        static constexpr auto _evaluate(auto&& self, ttl::scalar_index<_order> const& index) -> decltype(auto) {
             return _evaluate(FWD(self), index, std::make_index_sequence<_order>{});
         }
 
