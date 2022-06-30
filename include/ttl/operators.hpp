@@ -6,6 +6,7 @@
 #include "ttl/tensor_traits.hpp"
 #include "ttl/utils.hpp"
 #include <concepts>
+#include <functional>
 
 namespace ttl
 {
@@ -47,24 +48,6 @@ namespace ttl
                 return FWD(a) -= FWD(b);
             }
         } minus_eq{};
-
-        constexpr struct plus_fn
-        {
-            constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
-            {
-                static_assert(requires { FWD(a) + FWD(b); });
-                return FWD(a) + FWD(b);
-            }
-        } plus{};
-
-        constexpr struct minus_fn
-        {
-            constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
-            {
-                static_assert(requires { FWD(a) - FWD(b); });
-                return FWD(a) - FWD(b);
-            }
-        } minus{};
     }
 
     inline namespace operators
@@ -73,14 +56,14 @@ namespace ttl
         inline constexpr auto operator+(A&& a, B&& b)
         {
             static_assert(is_permutation_of<outer<A>, outer<B>>);
-            return sum(FWD(a), FWD(b), nttp<_detail::plus>);
+            return sum(FWD(a), FWD(b), nttp<std::plus{}>);
         }
 
         template <is_expression A, is_expression B>
         inline constexpr auto operator-(A&& a, B&& b)
         {
             static_assert(is_permutation_of<outer<A>, outer<B>>);
-            return sum(FWD(a), FWD(b), nttp<_detail::minus>);
+            return sum(FWD(a), FWD(b), nttp<std::minus{}>);
         }
 
         template <is_expression A, is_expression B>
