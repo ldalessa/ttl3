@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ttl/assign.hpp"
 #include "ttl/product.hpp"
 #include "ttl/sum.hpp"
 #include "ttl/tensor_traits.hpp"
@@ -27,24 +28,79 @@ namespace ttl
         }
     };
 
+    namespace _detail
+    {
+        constexpr struct plus_eq_fn
+        {
+            constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
+            {
+                static_assert(requires { FWD(a) += FWD(b); });
+                return FWD(a) += FWD(b);
+            }
+        } plus_eq{};
+
+        constexpr struct minus_eq_fn
+        {
+            constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
+            {
+                static_assert(requires { FWD(a) -= FWD(b); });
+                return FWD(a) -= FWD(b);
+            }
+        } minus_eq{};
+
+        constexpr struct plus_fn
+        {
+            constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
+            {
+                static_assert(requires { FWD(a) + FWD(b); });
+                return FWD(a) + FWD(b);
+            }
+        } plus{};
+
+        constexpr struct
+        {
+            constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
+            {
+                static_assert(requires { FWD(a) - FWD(b); });
+                return FWD(a) - FWD(b);
+            }
+        } minus{};
+    }
+
     inline namespace operators
     {
         template <is_expression A, is_expression B>
         inline constexpr auto operator+(A&& a, B&& b)
         {
-            return sum(FWD(a), FWD(b), nttp<plus>);
+            static_assert(is_permutation_of<outer<A>, outer<B>>);
+            return sum(FWD(a), FWD(b), nttp<_detail::plus>);
         }
 
         template <is_expression A, is_expression B>
         inline constexpr auto operator-(A&& a, B&& b)
         {
-            return sum(FWD(a), FWD(b), nttp<minus>);
+            static_assert(is_permutation_of<outer<A>, outer<B>>);
+            return sum(FWD(a), FWD(b), nttp<_detail::minus>);
         }
 
         template <is_expression A, is_expression B>
         inline constexpr auto operator*(A&& a, B&& b)
         {
             return product<A, B>(FWD(a), FWD(b));
+        }
+
+        template <is_expression A, is_expression B>
+        inline constexpr auto operator+=(A&& a, B&& b) -> decltype(auto)
+        {
+            static_assert(is_permutation_of<outer<A>, outer<B>>);
+            return assign(FWD(a), FWD(b), nttp<_detail::plus_eq>);
+        }
+
+        template <is_expression A, is_expression B>
+        inline constexpr auto operator-=(A&& a, B&& b) -> decltype(auto)
+        {
+            static_assert(is_permutation_of<outer<A>, outer<B>>);
+            return assign(FWD(a), FWD(b), nttp<_detail::minus_eq>);
         }
     }
 }

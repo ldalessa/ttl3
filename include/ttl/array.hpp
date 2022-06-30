@@ -12,7 +12,7 @@ namespace ttl
     {
         using value_type = T;
 
-        T _data[_size];
+        T _data[_size]{};
 
         static constexpr auto size() -> int {
             return _size;

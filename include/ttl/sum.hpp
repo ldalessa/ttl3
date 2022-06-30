@@ -8,24 +8,6 @@ namespace ttl
 {
     template <class> struct bindable;
 
-    constexpr struct
-    {
-        constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
-            requires requires { FWD(a) + FWD(b); }
-        {
-            return FWD(a) + FWD(b);
-        }
-    } plus{};
-
-    constexpr struct
-    {
-        constexpr auto operator()(auto&& a, auto&& b) const -> decltype(auto)
-            requires requires { FWD(a) - FWD(b); }
-        {
-            return FWD(a) - FWD(b);
-        }
-    } minus{};
-
     template <is_expression A, is_expression B, auto _op>
     struct sum : bindable<sum<A, B, _op>>
     {
@@ -59,7 +41,9 @@ namespace ttl
         }
 
         constexpr auto evaluate(typed_index<_outer_a> const& outer) const -> decltype(auto) {
-            return _op(ttl::evaluate(_a, outer), ttl::evaluate(_b, outer));
+            using a_index = typed_index<_outer_a>;
+            using b_index = typed_index<_outer_b>;
+            return _op(ttl::evaluate(_a, a_index(outer)), ttl::evaluate(_b, b_index(outer)));
         }
     };
 

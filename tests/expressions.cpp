@@ -6,6 +6,54 @@
 
 using namespace ttl::tests;
 
+template <ttl::is_tensor X>
+constexpr auto accumulate(X x) -> bool
+{
+    bool passed = true;
+
+    ttl::is_extents auto e = ttl::extents(x);
+    ttl::is_tensor auto y = x;
+
+    if constexpr (ttl::is_scalar<X>) {
+        x += x;
+        passed &= TTL_CHECK( x == 2 * y );
+        x -= y;
+        passed &= TTL_CHECK( x == y );
+    }
+    else if constexpr (ttl::is_tensor_of_order<X, 1>) {
+        ttl::index<'i'> i;
+        x(i) += x(i);
+        for (int i = 0; i < e[0]; ++i) {
+            passed &= TTL_CHECK( x(i) == 2 * y(i) );
+        }
+
+        x(i) -= y(i);
+        for (int i = 0; i < e[0]; ++i) {
+            passed &= TTL_CHECK( x(i) == y(i) );
+        }
+    }
+    else if constexpr (ttl::is_tensor_of_order<X, 2>) {
+        ttl::index<'i'> i;
+        ttl::index<'j'> j;
+
+        x(i,j) += x(i,j);
+        for (int i = 0; i < e[0]; ++i) {
+            for (int j = 0; j < e[1]; ++j) {
+                passed &= TTL_CHECK( x(i,j) == 2 * y(i,j) );
+            }
+        }
+
+        x(i,j) -= y(i,j);
+        for (int i = 0; i < e[0]; ++i) {
+            for (int j = 0; j < e[1]; ++j) {
+                passed &= TTL_CHECK( x(i,j) == y(i,j) );
+            }
+        }
+    }
+
+    return passed;
+}
+
 constexpr auto Axpy(
         ttl::is_tensor_of_order<2> auto A,
         ttl::is_tensor_of_order<1> auto x,
@@ -61,6 +109,10 @@ constexpr auto static_tensor_tests() -> bool
     };
 
     passed &= Axpy(A, x, y);
+    passed &= accumulate(A);
+    passed &= accumulate(x);
+    passed &= accumulate(y);
+
     return passed;
 }
 
@@ -95,6 +147,9 @@ constexpr auto dynamic_tensor_tests() -> bool
     y(2) = 3;
 
     passed &= Axpy(A, x, y);
+    passed &= accumulate(A);
+    passed &= accumulate(x);
+    passed &= accumulate(y);
     return passed;
 }
 

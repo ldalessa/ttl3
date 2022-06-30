@@ -221,5 +221,8 @@ namespace ttl
     }();
 
     template <is_tensor_index auto a, is_tensor_index auto b>
+    constexpr bool is_permutation_of = a.is_permutation_of(b);
+
+    template <is_tensor_index auto a, is_tensor_index auto b>
     constexpr tensor_index concat(a, b);
 }
