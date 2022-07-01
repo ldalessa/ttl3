@@ -8,6 +8,7 @@ namespace ttl
     constexpr int COVARIANT = 1;
     constexpr int CONTRAVARIANT = 2;
     constexpr int CONTRACTED = 3;
+    constexpr int SYNTHETIC = 4;
 
     template <class T>
     concept is_index = requires {

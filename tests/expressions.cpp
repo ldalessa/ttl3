@@ -6,6 +6,9 @@
 
 using namespace ttl::tests;
 
+static ttl::index<'i'> i;
+static ttl::index<'j'> j;
+
 template <ttl::is_tensor T>
 constexpr auto assign(T x) -> bool
 {
@@ -19,15 +22,12 @@ constexpr auto assign(T x) -> bool
         passed &= TTL_CHECK( x == y );
     }
     else if constexpr (ttl::is_tensor_of_order<T, 1>) {
-        ttl::index<'i'> i;
         y = x(i);
         for (int i = 0; i < e[0]; ++i) {
             passed &= TTL_CHECK( x(i) == y(i) );
         }
     }
     else if constexpr (ttl::is_tensor_of_order<T, 2>) {
-        ttl::index<'i'> i;
-        ttl::index<'j'> j;
         y = x(i,j);
         for (int i = 0; i < e[0]; ++i) {
             for (int j = 0; j < e[1]; ++j) {
@@ -53,7 +53,6 @@ constexpr auto accumulate(T x) -> bool
         passed &= TTL_CHECK( x == y );
     }
     else if constexpr (ttl::is_tensor_of_order<T, 1>) {
-        ttl::index<'i'> i;
         x(i) += x(i);
         for (int i = 0; i < e[0]; ++i) {
             passed &= TTL_CHECK( x(i) == 2 * y(i) );
@@ -65,9 +64,6 @@ constexpr auto accumulate(T x) -> bool
         }
     }
     else if constexpr (ttl::is_tensor_of_order<T, 2>) {
-        ttl::index<'i'> i;
-        ttl::index<'j'> j;
-
         x(i,j) += x(i,j);
         for (int i = 0; i < e[0]; ++i) {
             for (int j = 0; j < e[1]; ++j) {
@@ -107,8 +103,6 @@ constexpr auto Axpy(
     passed &= TTL_CHECK( eA[0] == ey[0] );
     passed &= TTL_CHECK( eA[1] == ex[0] );
 
-    ttl::index<'i'> i;
-    ttl::index<'j'> j;
     ttl::is_tensor_of_order<1> auto z = A(i,~j) * x(j) + y(i);
 
     for (int i = 0; i < M; ++i) {
@@ -119,6 +113,15 @@ constexpr auto Axpy(
         T b = z(i);
         passed &= TTL_CHECK( a == b );
     }
+
+    return passed;
+}
+
+constexpr auto delta(ttl::is_scalar auto x)
+{
+    bool passed = true;
+
+    ttl::is_tensor_of_order<2> auto y = x * ttl::delta(i,j);
 
     return passed;
 }
@@ -140,12 +143,14 @@ constexpr auto static_tensor_tests() -> bool
         1, 2, 3
     };
 
-    passed &= Axpy(A, x, y);
-    passed &= assign(A);
-    passed &= assign(x);
+    passed &= TTL_CHECK( Axpy(A, x, y) );
+    passed &= TTL_CHECK( assign(A) );
+    passed &= TTL_CHECK( assign(x) );
 
-    passed &= accumulate(A);
-    passed &= accumulate(x);
+    passed &= TTL_CHECK( accumulate(A) );
+    passed &= TTL_CHECK( accumulate(x) );
+
+    passed &= TTL_CHECK( delta(2) );
 
     return passed;
 }

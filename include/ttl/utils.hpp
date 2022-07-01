@@ -18,6 +18,8 @@ namespace ttl
     [[deprecated]]
     void debug_print_types(auto...) {}
 
+    struct universal_type{};
+
     namespace _detail
     {
         template <class T>
@@ -58,4 +60,25 @@ namespace ttl
         and requires (T t, int i) {
             { t[i] } -> std::convertible_to<U>;
         };
+}
+
+namespace std
+{
+    template <class A>
+    struct common_type<A, ttl::universal_type>
+    {
+        using type = A;
+    };
+
+    template <class B>
+    struct common_type<ttl::universal_type, B>
+    {
+        using type = B;
+    };
+
+    template <>
+    struct common_type<ttl::universal_type, ttl::universal_type>
+    {
+        using type = ttl::universal_type;
+    };
 }

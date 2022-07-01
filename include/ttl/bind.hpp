@@ -33,7 +33,7 @@ namespace ttl
             return evaluate(typed_index<_outer>{});
         }
 
-        static consteval auto get_outer() -> tensor_index<_order> {
+        static constexpr auto get_outer() -> tensor_index<_order> {
             return _outer;
         }
 

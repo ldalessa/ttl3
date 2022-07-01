@@ -1,8 +1,10 @@
 #pragma once
 
 #include "ttl/array.hpp"
+#include "ttl/assign.hpp"
 #include "ttl/bind.hpp"
 #include "ttl/bindable.hpp"
+#include "ttl/delta.hpp"
 #include "ttl/expression_traits.hpp"
 #include "ttl/index.hpp"
 #include "ttl/operators.hpp"

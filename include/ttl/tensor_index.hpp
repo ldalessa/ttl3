@@ -108,6 +108,14 @@ namespace ttl
             return n;
         }
 
+        constexpr auto has_synthetic() const -> bool {
+            bool synthetic = false;
+            for (auto [c, t] : *this) {
+                synthetic &= (t & SYNTHETIC);
+            }
+            return synthetic;
+        }
+
         constexpr auto is_subset_of(is_tensor_index auto&& b) const -> bool
         {
             for (int n = 1; auto [c, t] : *this) {

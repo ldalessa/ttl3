@@ -1,7 +1,8 @@
 #pragma once
 
-#include "expression_traits.hpp"
-#include "utils.hpp"
+#include "ttl/expression_traits.hpp"
+#include "ttl/typed_index.hpp"
+#include "ttl/utils.hpp"
 
 namespace ttl
 {
@@ -20,7 +21,9 @@ namespace ttl
     {
         constexpr tensor_index ai = outer<A>;
         constexpr tensor_index bi = outer<B>;
-        static_assert(is_permutation_of<ai, bi>);
+        static_assert(not ai.has_synthetic(), "left hand side exposes a synthetic index");
+        static_assert(not bi.has_synthetic(), "right hand side exposes a synthetic index");
+        static_assert(is_permutation_of<ai, bi>, "attempting to assign expressions with incompatible indices");
         using a_index = typed_index<ai>;
         using b_index = typed_index<bi>;
         is_extents auto extents = ttl::extents(a);
@@ -35,6 +38,8 @@ namespace ttl
     constexpr auto assign(A&& a, B&& b, nttp_args<op> = {}) -> decltype(auto)
         requires (not is_expression<A> and order<A> == order<B>)
     {
+        constexpr tensor_index bi = outer<B>;
+        static_assert(not bi.has_synthetic(), "right hand side exposes a synthetic index");
         is_extents auto extents = ttl::extents(a);
         typed_index<outer<B>> i;
         do {

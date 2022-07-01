@@ -21,46 +21,46 @@ namespace ttl
     namespace _detail
     {
         template <class T>
-        concept _has_tensor_traits_specialization = requires {
+        concept has_tensor_traits_specialization = requires {
             typename tensor_traits_t<T>;
         };
 
         template <class T>
-        concept _has_tensor_traits_scalar_type = _has_tensor_traits_specialization<T> and requires {
+        concept has_tensor_traits_scalar_type = has_tensor_traits_specialization<T> and requires {
             typename tensor_traits_t<T>::scalar_type;
         };
 
         template <class T>
-        concept _has_tensor_traits_get_extents = _has_tensor_traits_specialization<T>
+        concept has_tensor_traits_get_extents = has_tensor_traits_specialization<T>
             and requires (T t) {
                 { tensor_traits_t<T>::get_extents(t) } -> is_extents;
             };
 
         template <class T>
-        concept _has_tensor_traits_evaluate = _has_tensor_traits_specialization<T>
-            and _has_tensor_traits_scalar_type<T>
-            and _has_tensor_traits_get_extents<T>
+        concept has_tensor_traits_evaluate = has_tensor_traits_specialization<T>
+            and has_tensor_traits_scalar_type<T>
+            and has_tensor_traits_get_extents<T>
             and requires (T t, scalar_index<size<decltype(tensor_traits_t<T>::get_extents(t))>> const& i) {
                 { tensor_traits_t<T>::evaluate(t, i) } -> std::convertible_to<typename tensor_traits_t<T>::scalar_type>;
             };
     };
 
     template <class T>
-    concept is_tensor = _detail::_has_tensor_traits_scalar_type<T>
-        and _detail::_has_tensor_traits_get_extents<T>
-        and _detail::_has_tensor_traits_evaluate<T>;
+    concept is_tensor = _detail::has_tensor_traits_scalar_type<T>
+        and _detail::has_tensor_traits_get_extents<T>
+        and _detail::has_tensor_traits_evaluate<T>;
 
-    template <_detail::_has_tensor_traits_scalar_type T>
+    template <_detail::has_tensor_traits_scalar_type T>
     using scalar_type_t = typename tensor_traits_t<T>::scalar_type;
 
-    template <_detail::_has_tensor_traits_get_extents T>
+    template <_detail::has_tensor_traits_get_extents T>
     constexpr int order = size<decltype(tensor_traits_t<T>::get_extents(std::declval<T>()))>;
 
     namespace _detail
     {
         struct _get_extents_fn
         {
-            template <_detail::_has_tensor_traits_get_extents T>
+            template <_detail::has_tensor_traits_get_extents T>
             constexpr auto operator()(T&& obj) const -> decltype(auto) {
                 return tensor_traits_t<T>::get_extents(FWD(obj));
             }
@@ -72,7 +72,7 @@ namespace ttl
     {
         struct _evaluate_fn
         {
-            template <_detail::_has_tensor_traits_evaluate T>
+            template <_detail::has_tensor_traits_evaluate T>
             constexpr auto operator()(T&& obj, is_scalar_index auto&& i) const -> decltype(auto) {
                 return tensor_traits_t<T>::evaluate(FWD(obj), FWD(i));
             }
@@ -89,29 +89,29 @@ namespace ttl
     namespace _detail
     {
         template <class T>
-        concept _has_member_scalar_type = requires {
+        concept has_member_scalar_type = requires {
             typename std::remove_cvref_t<T>::scalar_type;
         };
 
         template <class T>
-        concept _has_member_get_extents = requires (T t) {
+        concept has_member_get_extents = requires (T t) {
             { t.get_extents() } -> is_extents;
         };
 
         template <class T>
-        concept _has_member_evaluate = _has_member_scalar_type<T>
-            and _has_member_get_extents<T>
+        concept has_member_evaluate = has_member_scalar_type<T>
+            and has_member_get_extents<T>
             and requires (T t, scalar_index<size<decltype(t.get_extents())>> const& i) {
                 { t.evaluate(i) } -> std::convertible_to<typename std::remove_cvref_t<T>::scalar_type>;
             };
 
         template <class T>
-        concept _has_member_tensor_traits = _has_member_scalar_type<T>
-            and _has_member_get_extents<T>
-            and _has_member_evaluate<T>;
+        concept has_member_tensor_traits = has_member_scalar_type<T>
+            and has_member_get_extents<T>
+            and has_member_evaluate<T>;
     }
 
-    template <_detail::_has_member_tensor_traits T>
+    template <_detail::has_member_tensor_traits T>
     struct tensor_traits<T>
     {
         using scalar_type = typename std::remove_cvref_t<T>::scalar_type;
