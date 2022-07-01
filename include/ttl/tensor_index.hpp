@@ -257,6 +257,22 @@ namespace ttl
     }();
 
     template <is_tensor_index auto a, is_tensor_index auto b>
+    constexpr tensor_index merge_synthetic = [] {
+        tensor_index<a.size()> merged;
+        int i = 0;
+        for (auto&& [c, t] : a) {
+            for (auto&& [cʹ, tʹ] : b) {
+                if (c != cʹ) continue;
+                merged[i++] = _index(c, t & CONTRACTED + t ^ tʹ);
+                break;
+            }
+        }
+        if (i != a.size()) throw "failed to properly merge indices";
+        merged.validate();
+        return merged;
+    }();
+
+    template <is_tensor_index auto a, is_tensor_index auto b>
     constexpr bool is_permutation_of = a.is_permutation_of(b);
 
     template <is_tensor_index auto a, is_tensor_index auto b>

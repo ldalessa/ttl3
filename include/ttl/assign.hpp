@@ -21,12 +21,17 @@ namespace ttl
     {
         constexpr tensor_index ai = outer<A>;
         constexpr tensor_index bi = outer<B>;
-        static_assert(not ai.has_synthetic(), "left hand side exposes a synthetic index");
-        static_assert(not bi.has_synthetic(), "right hand side exposes a synthetic index");
         static_assert(is_permutation_of<ai, bi>, "attempting to assign expressions with incompatible indices");
         using a_index = typed_index<ai>;
         using b_index = typed_index<bi>;
-        is_extents auto extents = ttl::extents(a);
+        constexpr tensor_index outer = merge_synthetic<ai, bi>;
+        constexpr array map = outer.map_extents_from(ai + bi);
+        array all_extents = join_extents(ttl::extents(a), ttl::extents(b));
+        array<int, outer.size()> extents;
+        for (int i = 0; i < outer.size(); ++i) {
+            extents[i] = all_extents[map[i]];
+        }
+
         typed_index<ai> i;
         do {
             op(ttl::evaluate(a, a_index(i)), ttl::evaluate(b, b_index(i)));

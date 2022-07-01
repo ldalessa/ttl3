@@ -15,6 +15,7 @@ namespace ttl
 
         static constexpr tensor_index _outer_a = outer<A>;
         static constexpr tensor_index _outer_b = outer<B>;
+        static constexpr tensor_index _outer = merge_synthetic<_outer_a, _outer_b>;
         static constexpr int _order = _outer_a.size();
 
         static_assert(is_permutation_of<_outer_a, _outer_b>);
@@ -32,27 +33,14 @@ namespace ttl
             return evaluate(typed_index<_outer_a>{});
         }
 
-        static constexpr auto get_outer() -> tensor_index<_order> /* consteval clang-14 */
-        {
-            tensor_index<_order> outer;
-            int i = 0;
-            for (auto&& [c, t] : _outer_a) {
-                for (auto&& [cʹ, tʹ] : _outer_b) {
-                    if (c != cʹ) continue;
-                    outer[i++] = _index(c, t & CONTRACTED + t ^ tʹ);
-                    break;
-                }
-            }
-            if (i != _order) throw "failed to properly initialize outer index";
-            outer.validate();
-            return outer;
+        static constexpr auto get_outer() -> tensor_index<_order> { /* consteval clang-14 */
+            return _outer;
         }
 
         constexpr auto get_extents() const -> array<int, _order>
         {
-            constexpr tensor_index outer = get_outer();
             constexpr tensor_index all = _outer_a + _outer_b;
-            constexpr array map = outer.map_extents_from(all);
+            constexpr array map = _outer.map_extents_from(all);
             array joined = join_extents(ttl::extents(_a), ttl::extents(_b));
             array<int, _order> extents;
             for (int i = 0; i < _order; ++i) {
