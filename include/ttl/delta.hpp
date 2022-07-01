@@ -35,4 +35,9 @@ namespace ttl
         ttl::index<i, _u + SYNTHETIC>{},
         ttl::index<j, _v + SYNTHETIC>{}
     }>;
+
+    static consteval auto δ(ttl::is_index auto a, ttl::is_index auto b)
+    {
+        return delta(a, b);
+    }
 }

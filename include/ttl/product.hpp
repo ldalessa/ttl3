@@ -55,23 +55,12 @@ namespace ttl
         template <is_tensor_index auto to>
         constexpr auto _gather_extents(nttp_args<to>) const -> array<int, to.size()>
         {
-            constexpr auto map = to.gather_from(_all);
-            array all = _join(ttl::extents(_a), ttl::extents(_b));
+            constexpr array map = to.map_extents_from(_all);
+            array all = join_extents(ttl::extents(_a), ttl::extents(_b));
             array<int, to.size()> out;
             for (int i = 0; i < to.size(); ++i) {
                 out[i] = all[map[i]];
             }
-            return out;
-        }
-
-        template <is_extents T, is_extents U>
-        static constexpr auto _join(T&& a, U&& b) -> array<int, size<T> + size<U>>
-        {
-            array<int, size<T> + size<U>> out;
-            int i = 0;
-            for (auto&& a : a) out[i++] = a;
-            for (auto&& b : b) out[i++] = b;
-            if (i != size<T> + size<U>) throw "error joining arrays";
             return out;
         }
     };

@@ -68,6 +68,16 @@ namespace ttl
     }
     constexpr _detail::_get_extents_fn extents{};
 
+    template <is_extents A, is_extents B>
+    constexpr auto join_extents(A&& a, B&& b) -> array<int, size<A> + size<B>>
+    {
+        array<int, size<A> + size<B>> out;
+        int i = 0;
+        for (auto&& a : a) out[i++] = a;
+        for (auto&& b : b) out[i++] = b;
+        return out;
+    }
+
     namespace _detail
     {
         struct _evaluate_fn

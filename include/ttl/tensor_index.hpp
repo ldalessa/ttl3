@@ -111,7 +111,7 @@ namespace ttl
         constexpr auto has_synthetic() const -> bool {
             bool synthetic = false;
             for (auto [c, t] : *this) {
-                synthetic &= (t & SYNTHETIC);
+                synthetic |= (t & SYNTHETIC);
             }
             return synthetic;
         }
@@ -144,6 +144,26 @@ namespace ttl
             return true;
         }
 
+        constexpr auto map_extents_from(is_tensor_index auto b) const -> array<int, _size>
+        {
+            array<int, _size> map;
+            for (int i = 0; i < _size; ++i) {
+                auto [c, t] = (*this)[i];
+                if (t == PROJECTED) throw "cannot map projected extents";
+                int j = 0;
+                for (; j < b.size(); ++j) {
+                    auto [cʹ, tʹ] = b[j];
+                    if (c != cʹ) continue;
+                    if (t == CONTRACTED and tʹ & SYNTHETIC) continue;
+                    if (t != CONTRACTED and t != tʹ) continue;
+                    map[i] = j;
+                    break;
+                }
+                if (j == b.size()) throw "extent not found";
+            }
+            return map;
+        }
+
         ///
         constexpr auto gather_from(is_tensor_index auto&& b) const {
             // if (not is_subset_of(b)) {
@@ -168,13 +188,17 @@ namespace ttl
         constexpr auto validate() const -> void
         {
             for (int i = 0; i < _size; ++i) {
-                if (auto [c, t] = (*this)[i]; t != PROJECTED) {
-                    for (int n = 0, j = i + 1; j < _size; ++j) {
-                        if (auto [cʹ, tʹ] = (*this)[j]; c == cʹ) {
-                            if (n++ or t + tʹ != CONTRACTED) {
-                                throw "invalid index construction";
-                            }
-                        }
+                auto [c, t] = (*this)[i];
+                if (t == SYNTHETIC) throw "SYNTHETIC indices must also be CO/CONTRAVARIANT";
+                if (t == SYNTHETIC + CONTRACTED) throw "SYNTHETIC indices must not be CONTRACTED";
+                if (t == PROJECTED) continue;
+
+                for (int n = 0, j = i + 1; j < _size; ++j) {
+                    auto [cʹ, tʹ] = (*this)[j];
+                    if (c == cʹ) {
+                        if (n++) throw "index appeared more than twice";
+                        if ((t & tʹ) == SYNTHETIC) throw "contracted index cannot be synthetic";
+                        if (((t & CONTRACTED) + (tʹ & CONTRACTED)) != CONTRACTED) throw "contraction must be between CO/CONTRAVARIANT indices";
                     }
                 }
             }
@@ -218,9 +242,13 @@ namespace ttl
         constexpr int size = a.n_contracted();
         tensor_index<size> out;
         int i = 0;
-        for (auto [c, t] : a) {
-            if (t != PROJECTED and a.count(c) == 2 and out.count(c, i) == 0) {
+        for (int j = 0; j < a.size(); ++j) {
+            auto [c, t] = a[j];
+            for (int k = 0; k < j; ++k) {
+                auto [cʹ, tʹ] = a[k];
+                if (c != cʹ) continue;
                 out[i++] = _index(c, CONTRACTED);
+                break;
             }
         }
         if (i != size) throw "failed to properly contract an index";
@@ -233,4 +261,18 @@ namespace ttl
 
     template <is_tensor_index auto a, is_tensor_index auto b>
     constexpr tensor_index concat(a, b);
+
+    /// Join two indices.
+    ///
+    /// Unlike `concat<>`, this does not validate the returned value.
+    constexpr auto operator+(is_tensor_index auto a, is_tensor_index auto b) {
+        constexpr int size = a.size() + b.size();
+        tensor_index<size> out;
+        int i = 0;
+        for (auto&& c : a) out[i++] = c;
+        for (auto&& c : b) out[i++] = c;
+        if (i != out.size()) throw "error concatenating indices";
+        // do not validate here
+        return out;
+    }
 }

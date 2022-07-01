@@ -67,7 +67,7 @@ namespace ttl
         template <is_tensor_index auto to>
         constexpr auto _gather_extents(nttp_args<to>) const -> array<int, to.size()>
         {
-            constexpr auto map = to.gather_from(_inner);
+            constexpr auto map = to.map_extents_from(_inner);
             auto&& inner = ttl::extents(_a);
             array<int, to.size()> out;
             for (int i = 0; i < to.size(); ++i) {

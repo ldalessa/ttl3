@@ -32,32 +32,31 @@ namespace ttl
             return evaluate(typed_index<_outer_a>{});
         }
 
-        static consteval auto get_outer() -> tensor_index<_order> {
+        static constexpr auto get_outer() -> tensor_index<_order> /* consteval clang-14 */
+        {
             tensor_index<_order> outer;
             int i = 0;
             for (auto&& [c, t] : _outer_a) {
                 for (auto&& [cʹ, tʹ] : _outer_b) {
-                    if (c == cʹ) {
-                        int synthetic = (t & SYNTHETIC) ^ (tʹ & SYNTHETIC);
-                        outer[i++] = _index(c, t &~ SYNTHETIC + synthetic);
-                        break;
-                    }
+                    if (c != cʹ) continue;
+                    outer[i++] = _index(c, t & CONTRACTED + t ^ tʹ);
+                    break;
                 }
             }
             if (i != _order) throw "failed to properly initialize outer index";
+            outer.validate();
             return outer;
         }
 
         constexpr auto get_extents() const -> array<int, _order>
         {
-            // The extents map tells us if the extent should come from the left
-            // or right child, based on if one is synthetic and one isn't
-            constexpr auto map = _get_extents_map();
-            is_extents_of_order<_order> auto a = ttl::extents(_a);
-            is_extents_of_order<_order> auto b = ttl::extents(_b);
+            constexpr tensor_index outer = get_outer();
+            constexpr tensor_index all = _outer_a + _outer_b;
+            constexpr array map = outer.map_extents_from(all);
+            array joined = join_extents(ttl::extents(_a), ttl::extents(_b));
             array<int, _order> extents;
             for (int i = 0; i < _order; ++i) {
-                extents[i] = (map.as[i]) ? b[map.is[i]] : a[map.is[i]];
+                extents[i] = joined[map[i]];
             }
             return extents;
         }
@@ -66,34 +65,6 @@ namespace ttl
             using a_index = typed_index<_outer_a>;
             using b_index = typed_index<_outer_b>;
             return _op(ttl::evaluate(_a, a_index(outer)), ttl::evaluate(_b, b_index(outer)));
-        }
-
-        static constexpr /* consteval */ auto _get_extents_map()
-        {
-            struct extent_map {
-                array<int, _order> as;
-                array<int, _order> is;
-            };
-
-            extent_map map;
-            int i = 0;
-            for (auto&& [c, t] : _outer_a) {
-                if (t & SYNTHETIC) {
-                    for (int j = 0; auto&& [cʹ, tʹ] : _outer_b) {
-                        if (c == cʹ) {
-                            map.as[i] = 1;
-                            map.is[i] = j;
-                            break;
-                        }
-                        ++j;
-                    }
-                }
-                else {
-                    map.as[i] = 0;
-                    map.is[i] = i;
-                }
-            }
-            return map;
         }
     };
 

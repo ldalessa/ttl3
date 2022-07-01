@@ -61,24 +61,3 @@ namespace ttl
             { t[i] } -> std::convertible_to<U>;
         };
 }
-
-namespace std
-{
-    template <class A>
-    struct common_type<A, ttl::universal_type>
-    {
-        using type = A;
-    };
-
-    template <class B>
-    struct common_type<ttl::universal_type, B>
-    {
-        using type = B;
-    };
-
-    template <>
-    struct common_type<ttl::universal_type, ttl::universal_type>
-    {
-        using type = ttl::universal_type;
-    };
-}

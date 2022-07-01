@@ -122,6 +122,37 @@ constexpr auto delta(ttl::is_scalar auto x)
     bool passed = true;
 
     ttl::is_tensor_of_order<2> auto y = x * ttl::delta(i,j);
+    ttl::is_tensor_index auto i = ttl::outer<decltype(y)>;
+    passed &= TTL_CHECK( i.has_synthetic() );
+
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 0; j < i; ++j) {
+            passed &= TTL_CHECK( y(i,j) == 0 );
+        }
+        passed &= TTL_CHECK( y(i,i) == x );
+        for (int j = i + 1; j < 5; ++j) {
+            passed &= TTL_CHECK( y(i,j) == 0 );
+        }
+    }
+
+    return passed;
+}
+
+constexpr auto delta(ttl::is_tensor_of_order<1> auto x)
+{
+    bool passed = true;
+
+    ttl::is_tensor_of_order<1> auto y = x(i) * ttl::delta(~i,j);
+    passed &= TTL_CHECK( ttl::outer<decltype(y)>.has_synthetic() );
+
+    ttl::is_extents_of_order<1> auto e = ttl::extents(x);
+    for (int i = 0; i < e[0]; ++i) {
+        passed &= TTL_CHECK( y(i) == x(i) );
+    }
+
+    // more or less a trace of the outer product
+    ttl::scalar_type_t<decltype(x)> z = x(i) * ttl::δ(~i,j) * x(~j);
+    passed &= TTL_CHECK( z == 30 );
 
     return passed;
 }
@@ -151,6 +182,7 @@ constexpr auto static_tensor_tests() -> bool
     passed &= TTL_CHECK( accumulate(x) );
 
     passed &= TTL_CHECK( delta(2) );
+    passed &= TTL_CHECK( delta(x) );
 
     return passed;
 }
@@ -199,11 +231,12 @@ constexpr auto dynamic_tensor_tests() -> bool
 
 int main()
 {
-    constexpr bool a = static_tensor_tests<int>(); if (!a) throw;
-    constexpr bool b = static_tensor_tests<double>(); if (!a) throw;
-#ifdef __clang__
-#define constexpr
-#endif
-    constexpr bool c = dynamic_tensor_tests<int>(); if (!a) throw;
-    constexpr bool d = dynamic_tensor_tests<double>(); if (!a) throw;
+    //constexpr
+    bool a = static_tensor_tests<int>(); if (!a) throw;
+//     constexpr bool b = static_tensor_tests<double>(); if (!a) throw;
+// #ifdef __clang__
+// #define constexpr
+// #endif
+//     constexpr bool c = dynamic_tensor_tests<int>(); if (!a) throw;
+//     constexpr bool d = dynamic_tensor_tests<double>(); if (!a) throw;
 }
