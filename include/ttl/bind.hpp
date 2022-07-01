@@ -11,7 +11,7 @@ namespace ttl
     template <is_tensor A, is_tensor_index auto _inner>
     struct bind : bindable<bind<A, _inner>>
     {
-        using scalar_type = scalar_type_t<A>;
+        using value_type = value_type_t<A>;
 
         static constexpr tensor_index _outer = exported<_inner>;
         static constexpr tensor_index _projected = projected<_inner>;
@@ -29,7 +29,7 @@ namespace ttl
         {
         }
 
-        constexpr operator scalar_type() const requires (_order == 0) {
+        constexpr operator value_type() const requires (_order == 0) {
             return evaluate(typed_index<_outer>{});
         }
 
@@ -45,7 +45,7 @@ namespace ttl
         {
             array extents = _gather_extents(nttp<_all>);
             typed_index<_all> i = outer + _p;
-            scalar_type sum{0};
+            value_type sum{0};
             do {
                 sum += ttl::evaluate(_a, typed_index<_inner>(i));
             } while (carry_sum_add<_passthrough.size()>(&i, extents));

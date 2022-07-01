@@ -11,7 +11,7 @@ namespace ttl
     template <is_expression A, is_expression B, auto _op>
     struct sum : bindable<sum<A, B, _op>>
     {
-        using scalar_type = std::common_type_t<scalar_type_t<A>, scalar_type_t<B>>;
+        using value_type = std::common_type_t<value_type_t<A>, value_type_t<B>>;
 
         static constexpr tensor_index _outer_a = outer<A>;
         static constexpr tensor_index _outer_b = outer<B>;
@@ -29,7 +29,7 @@ namespace ttl
         {
         }
 
-        constexpr operator scalar_type() const requires(_order == 0) {
+        constexpr operator value_type() const requires(_order == 0) {
             return evaluate(typed_index<_outer_a>{});
         }
 

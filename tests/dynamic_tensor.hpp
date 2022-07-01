@@ -10,7 +10,7 @@ namespace ttl::tests
     template <class T, int _order>
     struct dynamic_tensor : ttl::bindable<dynamic_tensor<T, _order>>
     {
-        using scalar_type = T;
+        using value_type = T;
 
         md_vector<T, _order, row_major<_order, int>> _data{};
 

@@ -13,7 +13,7 @@ namespace ttl::tests
     template <class T, auto _shape>
     struct static_tensor : ttl::bindable<static_tensor<T, _shape>>
     {
-        using scalar_type = T;
+        using value_type = T;
         using extents_type = decltype(_shape);
 
         static constexpr auto _order = _shape.size();

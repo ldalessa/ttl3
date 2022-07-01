@@ -8,7 +8,7 @@ namespace ttl
     template <is_expression A, is_expression B>
     struct product : ttl::bindable<product<A, B>>
     {
-        using scalar_type = std::common_type_t<scalar_type_t<A>, scalar_type_t<B>>;
+        using value_type = std::common_type_t<value_type_t<A>, value_type_t<B>>;
 
         static constexpr tensor_index _outer_a = outer<A>;
         static constexpr tensor_index _outer_b = outer<B>;
@@ -27,7 +27,7 @@ namespace ttl
         {
         }
 
-        constexpr operator scalar_type() const requires (_order == 0) {
+        constexpr operator value_type() const requires (_order == 0) {
             return evaluate(typed_index<_outer>{});
         }
 
@@ -45,7 +45,7 @@ namespace ttl
             using b_index = typed_index<_outer_b>;
             array extents = _gather_extents(nttp<_inner>);
             typed_index<_inner> i = outer;
-            scalar_type sum{0};
+            value_type sum{0};
             do {
                 sum += ttl::evaluate(_a, a_index(i)) * ttl::evaluate(_b, b_index(i));
             } while (carry_sum_add<_outer.size()>(&i, extents));

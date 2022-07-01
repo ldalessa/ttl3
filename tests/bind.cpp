@@ -116,13 +116,13 @@ constexpr bool matrix_tests(T&& t)
 
     // trace
     if (e0[0] == e0[1]) {
-        ttl::scalar_type_t<T> a{0};
+        ttl::value_type_t<T> a{0};
         for (int i = 0; i < e0[0]; ++i) {
             a += t(i,i);
         }
-        ttl::scalar_type_t<T> b = t(i,~i);
+        ttl::value_type_t<T> b = t(i,~i);
         passed &= TTL_CHECK( a == b );
-        ttl::scalar_type_t<T> c = t(~i,i);
+        ttl::value_type_t<T> c = t(~i,i);
         passed &= TTL_CHECK( a == c );
     }
 

@@ -13,7 +13,7 @@ namespace ttl
     template <ttl::is_tensor_index_of_size<2> auto _outer>
     struct delta : bindable<delta<_outer>>
     {
-        using scalar_type = int;
+        using value_type = int;
 
         consteval delta(ttl::is_index auto, ttl::is_index auto) {}
 

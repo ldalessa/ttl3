@@ -14,7 +14,7 @@ namespace ttl
     requires std::integral<T> or std::floating_point<T>
     struct tensor_traits<T>
     {
-        using scalar_type = T;
+        using value_type = T;
 
         static constexpr auto get_extents(T) -> array<int, 0> {
             return {};

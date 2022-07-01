@@ -89,9 +89,9 @@ constexpr auto Axpy(
 {
     bool passed = true;
 
-    using T = std::common_type_t<ttl::scalar_type_t<decltype(A)>,
-                                 ttl::scalar_type_t<decltype(x)>,
-                                 ttl::scalar_type_t<decltype(y)>>;
+    using T = std::common_type_t<ttl::value_type_t<decltype(A)>,
+                                 ttl::value_type_t<decltype(x)>,
+                                 ttl::value_type_t<decltype(y)>>;
 
     ttl::is_extents_of_order<2> auto eA = ttl::extents(A);
     ttl::is_extents_of_order<1> auto ex = ttl::extents(x);
@@ -151,7 +151,7 @@ constexpr auto delta(ttl::is_tensor_of_order<1> auto x)
     }
 
     // more or less a trace of the outer product
-    ttl::scalar_type_t<decltype(x)> z = x(i) * ttl::δ(~i,j) * x(~j);
+    ttl::value_type_t<decltype(x)> z = x(i) * ttl::δ(~i,j) * x(~j);
     passed &= TTL_CHECK( z == 30 );
 
     return passed;

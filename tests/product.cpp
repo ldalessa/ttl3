@@ -96,7 +96,7 @@ constexpr auto test(ttl::is_tensor_of_order<1> auto x) -> bool
     {
         ttl::index<'i'> i;
         ttl::is_scalar auto z = x(i) * x(~i);
-        ttl::scalar_type_t<decltype(x)> inner{0};
+        ttl::value_type_t<decltype(x)> inner{0};
         for (int i = 0; i < M; ++i) {
             inner += x(i) * x(i);
         }
@@ -169,7 +169,7 @@ constexpr auto test(ttl::is_tensor_of_order<2> auto x) -> bool {
         ttl::index<'i'> i;
         ttl::index<'j'> j;
         ttl::is_scalar auto y = x(i,j) * x(~i,~j);
-        ttl::scalar_type_t<decltype(y)> inner{0};
+        ttl::value_type_t<decltype(y)> inner{0};
         for (int i = 0; i < M; ++i) {
             for (int j = 0; j < N; ++j) {
                 inner += x(i,j) * x(i,j);
@@ -213,7 +213,7 @@ constexpr auto test(ttl::is_tensor_of_order<2> auto x) -> bool {
 
         for (int i = 0; i < M; ++i) {
             for (int j = 0; j < M; ++j) {
-                ttl::scalar_type_t<decltype(y)> a{0};
+                ttl::value_type_t<decltype(y)> a{0};
                 for (int k = 0; k < N; ++k) {
                     a += x(i,k) * x(j,k);
                 }
@@ -234,7 +234,7 @@ constexpr auto test(ttl::is_tensor_of_order<2> auto x) -> bool {
 
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N; ++j) {
-                ttl::scalar_type_t<decltype(y)> a{0};
+                ttl::value_type_t<decltype(y)> a{0};
                 for (int k = 0; k < M; ++k) {
                     a += x(k,i) * x(k,j);
                 }

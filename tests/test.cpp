@@ -38,6 +38,7 @@ int main()
     x(2) = 0.2;
     fmt::print("{}\n", x._data);
 
+    ttl::index<L'ν'> ν;
     ttl::index<'i'> i;
     auto b = x(i);
     // constexpr auto c = ttl::extents(b);
